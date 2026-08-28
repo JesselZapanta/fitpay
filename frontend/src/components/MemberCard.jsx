@@ -9,7 +9,7 @@ export default function MemberCard({ member }) {
         <div className="flex justify-between gap-2">
           <div>
             <div className="font-mono text-xs text-muted-foreground">{member.member_code}</div>
-            <div className="font-semibold">{member.first_name} {member.last_name}</div>
+            <div className="font-semibold">{member.name}</div>
             <div className="text-xs text-muted-foreground">{member.email}</div>
           </div>
           <Badge variant={member.status === "active" ? "default" : "secondary"}>{member.status}</Badge>

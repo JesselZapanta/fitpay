@@ -9,7 +9,7 @@ Design reference for implementation (UI, layout, components, states)
 
 **"Charge and Grow"** drives every visual decision:
 
-- **Charge** → payments, energy, action. Represented by a hot, high-energy accent (ember orange).
+- **Charge** → payments, energy, action. Represented by a focused, premium teal (deep teal, not orange).
 - **Grow** → member progress, business growth, consistency. Represented by a confident green.
 
 The admin using this system is gym staff, not developers — often mid-task at a front desk, sometimes on a tablet or phone. The UI must therefore be **fast to scan, forgiving of fat-finger taps, and calm under pressure** (a line of members waiting to check in is the real use case, not a quiet office). This is not a generic admin-template dashboard — it should feel like a piece of gym equipment: sturdy, high-contrast, purposeful.
@@ -28,11 +28,13 @@ Light-first UI (front-desk visibility, fluorescent lighting, quick glances) with
 
 ### Core palette
 
+> **Update 2026-08-27:** Orange (`#FF5A1F`) was replaced — it read as discount/cheap and caused eye fatigue on the light `surface-0`. The new **teal** keeps the energy but feels premium, calm, and pairs cleanly with warm off-white.
+
 | Token | Hex | Usage |
 |---|---|---|
-| `--charge-500` (primary) | `#FF5A1F` | Primary buttons, active nav, key CTAs ("Pay Now", "Check In") |
-| `--charge-600` (hover/pressed) | `#E64A0F` | Button hover/active state |
-| `--charge-100` (tint) | `#FFE7DA` | Selected rows, highlighted cards, badge backgrounds |
+| `--charge-500` (primary) | `#0F766E` | Primary buttons, active nav, key CTAs ("Pay Now", "Check In") — deep teal, WCAG AA on white |
+| `--charge-600` (hover/pressed) | `#115E59` | Button hover/active state — darker teal |
+| `--charge-100` (tint) | `#CCFBF1` | Selected rows, highlighted cards, badge backgrounds — teal-100 |
 | `--grow-500` (secondary) | `#1E8E5A` | Success states, "Active" membership, growth metrics |
 | `--grow-100` (tint) | `#DFF5E9` | Success badge backgrounds |
 | `--ink-900` (text primary) | `#1A1D1F` | Headings, primary text |
@@ -51,7 +53,7 @@ Light-first UI (front-desk visibility, fluorescent lighting, quick glances) with
 | Expired / Overdue / Absent | `#C43D3D` on `#FBE2E2` | Membership expired, payment overdue |
 | Neutral / Draft | `#5B6168` on `#EDEEF0` | Inactive plan, draft state |
 
-**Why not the expected "gym red/black"**: pure red-and-black reads as *alarm* and *masculine gym-bro*, which fights against clear data-reading and excludes half the member base. Ember orange keeps the energy without the aggression, and green does double duty as both "money in" and "membership healthy."
+**Why not "gym red/black" or pure orange**: pure red-and-black reads as *alarm* and *masculine gym-bro*, which fights against clear data-reading; pure ember orange (`#FF5A1F`) tested as cheap/discount-store, high-saturation on warm `surface-0` causes eye fatigue and fails the calm-under-pressure front-desk test. **Deep teal `#0F766E`** keeps the energy (charge) without the aggression, stays legible on white/warm-gray, meets WCAG AA for white text, and sits next to `grow` green as an analogous, premium pair — both "money in" and "membership healthy" without the discount vibe.
 
 ---
 
@@ -174,5 +176,3 @@ Minimal and functional only: 150ms ease-out for hover/press states, 200ms for sh
 
 *This document defines the visual and interaction language for FitPay implementation. It should be read alongside the functional requirements (FR-01–FR-08) and ERD in the project manuscript — this file governs *how it looks and feels*, the manuscript governs *what it does*.*
 
-
-do the login and register, and logout, create 2 dashboard(admin and memeber), use middleware, create seeder(1 admin, 1 member). for the design, use chadcn tailwind and lucide, please refer to the themes.md
