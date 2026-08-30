@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateMemberRequest extends FormRequest
+class StoreMemberRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,8 +15,8 @@ class UpdateMemberRequest extends FormRequest
     {
         return [
             'user_id' => ['nullable', 'exists:users,id'],
-            'name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('member')?->user_id)],
+            'name' => ['required_without:user_id', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'birthdate' => ['nullable', 'date', 'before:today'],
@@ -30,6 +29,9 @@ class UpdateMemberRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'user_id.exists' => 'Selected user does not exist.',
+            'name.required_without' => 'Member name is required.',
+            'email.unique' => 'This email is already used by another user.',
             'photo.mimes' => 'Photo must be JPG, PNG, or WebP.',
             'photo.max' => 'Photo must be under 5MB.',
         ];

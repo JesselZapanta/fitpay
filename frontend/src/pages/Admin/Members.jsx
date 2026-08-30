@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Plus, Search, Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Users, Filter, X, Image as ImageIcon, Mail, Phone, MapPin, Calendar, UserRound, Upload, Trash } from "lucide-react"
-import AdminLayout from "@/components/Layout/AdminLayout"
+import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
@@ -188,7 +188,7 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
               </div>
               {errors.photo && <p className="text-[11px] text-[#C43D3D]">{errors.photo[0]}</p>}
               <p className="text-[11px] text-[var(--ink-600)] flex items-center gap-1 leading-tight">
-                <Upload className="size-3 shrink-0" /> Upload JPG/PNG/WebP, max 5MB. Stored on <span className="font-mono">users.photo</span>.
+                <Upload className="size-3 shrink-0" /> Upload JPG/PNG/WebP, max 5MB.
               </p>
             </div>
           </div>
@@ -433,25 +433,26 @@ export default function MembersIndex() {
   return (
     <AdminLayout title="Members">
       <div className="space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-[var(--ink-900)] flex flex-wrap items-center gap-2">
-              <Users className="size-5 text-[var(--charge-500)] shrink-0" /> Members
-              <Badge variant="outline" className="bg-[var(--charge-100)] text-[var(--charge-500)] border-[var(--charge-500)]/20 hidden sm:inline-flex">
-                {meta.total} total
-              </Badge>
-              <Badge variant="outline" className="sm:hidden text-[10px] px-2 py-0.5">
-                {meta.total}
-              </Badge>
-            </h1>
-          </div>
-          <Button
-            onClick={() => { setSelected(null); setCreateOpen(true) }}
-            className="gap-2 min-h-11 cursor-pointer bg-[var(--charge-500)] hover:bg-[var(--charge-600)] w-full sm:w-auto shrink-0"
-          >
-            <Plus className="size-4" /> Add member
-          </Button>
-        </div>
+        <Card className="border-[var(--ink-300)] shadow-sm overflow-hidden">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <h1 className="font-display text-[22px] sm:text-[28px] font-semibold tracking-tight text-[var(--ink-900)] leading-none">
+                  Members
+                </h1>
+                <p className="text-xs sm:text-sm text-[var(--ink-600)]">
+                  <span className="font-semibold text-[var(--charge-500)]">{meta.total}</span> total — admin workspace
+                </p>
+              </div>
+              <Button
+                onClick={() => { setSelected(null); setCreateOpen(true) }}
+                className="gap-2 min-h-11 cursor-pointer bg-[var(--charge-500)] hover:bg-[var(--charge-600)] w-full sm:w-auto shrink-0"
+              >
+                <Plus className="size-4" /> Add member
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="border-[var(--ink-300)] shadow-sm">
           <CardContent className="p-3 sm:p-4 space-y-3">

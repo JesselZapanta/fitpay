@@ -26,7 +26,7 @@ export default function Register() {
     setLoading(true)
     try {
       const u = await register({ ...form, role: "member" })
-      navigate(u.role === "admin" ? "/admin" : "/member", { replace: true })
+      navigate(u.role === "admin" ? "/admin/dashboard" : "/member/dashboard", { replace: true })
     } catch (err) {
       const msg = err.response?.data?.message || "Registration failed. Please check your details."
       const errors = err.response?.data?.errors

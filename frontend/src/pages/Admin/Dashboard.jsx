@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Users, ShieldCheck, Dumbbell, Wallet, TrendingUp, Clock3, AlertTriangle, CheckCircle2 } from "lucide-react"
-import AdminLayout from "@/components/Layout/AdminLayout"
+import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import StatCard from "@/components/StatCard"
 import api from "@/lib/api"
 import { useAuth } from "@/context/AuthContext"
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
             {data?.welcome || `Welcome Admin ${user?.name}`}
           </h1>
           <p className="text-sm text-[var(--ink-600)]">
-            Consolidated overview — <span className="font-medium text-[var(--ink-900)]">admin view</span> • role-based access via <span className="font-mono text-xs bg-[var(--charge-100)] px-1.5 py-0.5 rounded text-[var(--charge-500)]">role:admin</span> middleware
+            Consolidated overview — <span className="font-medium text-[var(--ink-900)]">admin view</span>
           </p>
         </div>
 

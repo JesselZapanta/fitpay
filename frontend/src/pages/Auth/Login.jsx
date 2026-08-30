@@ -25,7 +25,7 @@ export default function Login() {
       const u = await login(form.email, form.password)
       const dest = location.state?.from?.pathname
       if (dest) navigate(dest, { replace: true })
-      else navigate(u.role === "admin" ? "/admin" : "/member", { replace: true })
+      else navigate(u.role === "admin" ? "/admin/dashboard" : "/member/dashboard", { replace: true })
     } catch (err) {
       const msg = err.response?.data?.message || "Invalid credentials. Please try again."
       const errors = err.response?.data?.errors

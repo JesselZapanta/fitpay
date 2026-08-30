@@ -19,13 +19,14 @@ import {
 import { useAuth } from "@/context/AuthContext"
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/admin", roles: ["admin"] },
-  { label: "Dashboard", icon: LayoutDashboard, href: "/member", roles: ["member"] },
-  { label: "Members", icon: Users, href: "/members", roles: ["admin"] },
-  { label: "Payments", icon: CreditCard, href: "/payments", roles: ["admin"] },
-  { label: "Attendance", icon: CalendarCheck, href: "/attendance", roles: ["admin", "member"] },
-  { label: "Memberships", icon: Layers, href: "/memberships", roles: ["admin"] },
-  { label: "Reports", icon: BarChart3, href: "/reports", roles: ["admin"] },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard", roles: ["admin"] },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/member/dashboard", roles: ["member"] },
+  { label: "Members", icon: Users, href: "/admin/members", roles: ["admin"] },
+  { label: "Payments", icon: CreditCard, href: "/admin/payments", roles: ["admin"] },
+  { label: "Attendance", icon: CalendarCheck, href: "/admin/attendance", roles: ["admin"] },
+  { label: "Attendance", icon: CalendarCheck, href: "/member/schedule", roles: ["member"] },
+  { label: "Memberships", icon: Layers, href: "/admin/memberships", roles: ["admin"] },
+  { label: "Reports", icon: BarChart3, href: "/admin/reports", roles: ["admin"] },
 ]
 
 export default function AppLayout({ children, title }) {

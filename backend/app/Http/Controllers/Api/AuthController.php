@@ -69,7 +69,11 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'status' => $user->status,
+                'photo' => $user->photo,
+                'photo_url' => $user->photo_url,
                 'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at?->toISOString(),
             ],
         ]);
     }
@@ -110,6 +114,9 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'status' => $user->status,
+                'photo' => $user->photo,
+                'photo_url' => $user->photo_url,
             ] : null,
         ], $status);
     }

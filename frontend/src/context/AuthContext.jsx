@@ -83,7 +83,16 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const value = { user, token, loading, login, register, logout, fetchUser, isAuthenticated: !!token && !!user }
+  const updateUser = useCallback((next) => {
+    setUser(next)
+    try {
+      localStorage.setItem("fitpay_user", JSON.stringify(next))
+    } catch {
+      //
+    }
+  }, [])
+
+  const value = { user, setUser: updateUser, token, loading, login, register, logout, fetchUser, isAuthenticated: !!token && !!user }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

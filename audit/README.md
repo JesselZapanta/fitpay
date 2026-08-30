@@ -1,35 +1,57 @@
-# Audit Log (newest first)
+﻿# Audit Log (newest first)
 
 | # | Audit File | Date | Task |
 |---|-----------|------|------|
-| 1 | 20260827-232403-remove-header-filters-sonner-photo-fix.md | 2026-08-27 23:24:03 | remove this Members Management Admin workspace • role-based access via role:admin middleware, the gender filter and the perpage filter(10 default) + add sooner or toast on right side + image error 422 |
-| 2 | 20260827-231259-equal-width-birthdate-gender-status.md | 2026-08-27 23:12:59 | brithday, gender and statas, must have the same size and widht |
-| 3 | 20260827-230411-reorder-birthdate-gender-status.md | 2026-08-27 23:04:11 | birtdate first then gender and status |
-| 4 | 20260827-230300-members-upload-photo-to-users.md | 2026-08-27 23:03:00 | remove this MEM-0001 ... and How it's stored ... and upload photo not a link, the photo is on the user table now |
-| 5 | 20260827-230200-members-management-migration-photo-polish.md | 2026-08-27 23:02:00 | update the Members Management form and module, check the migration first then implement |
-| 6 | 20260827-224509-remove-name-from-members.md | 2026-08-27 22:45:09 | remove the name on member there is name on user migration |
-| 7 | 20260827-223627-remove-redundant-member-columns.md | 2026-08-27 22:36:27 | Remove redundant columns from members: first_name/last_name → single name, drop email (use users.email via user_id), user_id required |
-| 8 | 20260827-222508-migration-single-file-redundant-fix.md | 2026-08-27 22:25:08 | in migration only 1 file per migration, then if you check there is redundant col on users and memebers table, fix this |
-| 9 | 20260827-221741-members-management-crud-search-filter-pagination.md | 2026-08-27 22:17:41 | do the members managemetn / do the members managementm backend and frontend, with table, server side search, filter and pagination, |
-| 10 | 20260827-220523-remove-admin-badge-topbar.md | 2026-08-27 22:05:23 | remove this on ADMIN tag on topbar |
-| 11 | 20260827-220357-top-nav-same-as-side.md | 2026-08-27 22:03:57 | actually put FitPay Admin admin@fitpay.test on top nav as well same design on side nav |
-| 12 | 20260827-220217-remove-top-nav-search-bell-avatar-logout.md | 2026-08-27 22:02:17 | Search members, payments… FitPay Admin admin@fitpay.test remove this on top nav including the bell and the logout |
-| 13 | 20260827-220000-replace-settings-with-fitpay-admin.md | 2026-08-27 22:00:00 | replace settings with FitPay Admin admin@fitpay.test |
-| 14 | 20260827-215902-sidebar-nav-scroll.md | 2026-08-27 21:59:02 | this one should move Overview Dashboard Operations Members Attendance Money Payments Memberships Insights Reports |
-| 15 | 20260827-215745-sidebar-fixed-no-vertical-move.md | 2026-08-27 21:57:45 | on sidebar it should not move vertically |
-| 16 | 20260827-215514-member-and-admin-layout.md | 2026-08-27 21:55:14 | make member layout and and admin layout |
-| 17 | 20260827-214640-register-default-member-no-role.md | 2026-08-27 21:46:40 | on register the default user is memeber / on register remove the role, the default user is memeber |
-| 18 | 20260827-214136-cursor-pointer-all-btns.md | 2026-08-27 21:41:36 | all the btns must have a cursor pointer |
-| 19 | 20260827-213952-remove-footer-badges-and-password-hint.md | 2026-08-27 21:39:52 | Gym-ready Mobile-first Secure JWT remove this / remove this password: password |
-| 20 | 20260827-213756-full-bg-not-left.md | 2026-08-27 21:37:56 | make the bg full not just on the left side |
-| 21 | 20260827-213551-centered-card-left-bg.md | 2026-08-27 21:35:51 | redesign it the the card is in the center then the backgound is on the left side |
-| 22 | 20260827-213248-remove-left-text.md | 2026-08-27 21:32:48 | remove the other text on the left side |
-| 23 | 20260827-212836-animated-svg-no-image.md | 2026-08-27 21:28:36 | dont use actual image, maybe use animated svg |
-| 24 | 20260827-212447-gym-theme-readded.md | 2026-08-27 21:24:47 | add gym theme design on the register and login |
-| 25 | 20260827-212134-revert-to-original-split.md | 2026-08-27 21:21:34 | go back to split / go back to the original slit design |
-| 26 | 20260827-211635-split-login-register-alt.md | 2026-08-27 21:16:35 | other design that split on login and register |
-| 27 | 20260827-211414-gym-theme-login-register.md | 2026-08-27 21:14:14 | additional gym theme, more gym theme background on login and register |
-| 28 | 20260827-211019-palette-orange-to-teal.md | 2026-08-27 21:10:19 | im changing my mind, Orange for gym looks bad, change the color, update the md as well |
-| 29 | 20260827-210613-jwt-auth-role-dashboards.md | 2026-08-27 21:06:13 | do the login and register, and logout, create 2 dashboard(admin and memeber), use middleware, use jwt for auth, create seeder(1 admin, 1 member). for the design, use chadcn tailwind and lucide, please refer to the themes.md |
-| 30 | 20260827-194952-frontend-scaffold-jsx-tailwind-shadcn.md | 2026-08-27 19:49:52 | crate file frontend and install react jsx using vite, tailwind, lucide react, axios, and chadcn(jsx) |
-| 31 | 20260827-192322-fitpay-manuscript-scan.md | 2026-08-27 19:23:24 | Scan Final Revised Manuscript (1).docx and create FitPay development spec (.md) |
+| 1 | 20260829-103000-membership-date-tracking.md | 2026-08-29 10:30:00 | Membership start/end date tracking by plan |
+| 2 | 20260829-102000-dashboard-membership-status-sync.md | 2026-08-29 10:20:00 | Dashboard membership status sync |
+| 3 | 20260829-101500-membership-status-edit.md | 2026-08-29 10:15:00 | Membership status edit on admin/memberships |
+| 4 | 20260829-100000-admin-memberships-module.md | 2026-08-29 10:00:00 | Admin Memberships module |
+| 5 | 20260829-095500-role-prefixed-routes.md | 2026-08-29 09:55:00 | Role-prefixed routes - admin/* and member/* |
+| 6 | 20260829-094500-member-dashboard-latest-request-redesign.md | 2026-08-29 09:45:00 | Member Dashboard Latest Request - redesign |
+| 7 | 20260829-093000-membership-latest-request-width-fix.md | 2026-08-29 09:30:00 | Membership Latest Request - width fix |
+| 8 | 20260829-090000-membership-latest-request-first.md | 2026-08-29 09:00:00 | Membership Latest Request - First & Redesigned |
+| 9 | 20260828-215217-member-dashboard-current-plan.md | 2026-08-28 21:52:17 | Show Current Plan and Latest Request on Member Dashboard |
+| 10 | 20260828-214458-membership-request-detail-page.md | 2026-08-28 21:44:58 | Membership Requests Detail Page (Replace Dialog) |
+| 11 | 20260828-211417-admin-membership-requests.md | 2026-08-28 21:14:17 | Add Admin Membership Requests Page |
+| 12 | 20260828-210032-membership-payment-submission.md | 2026-08-28 21:00:32 | Add Membership Payment Submission with Receipt Upload |
+| 13 | 20260828-204335-membership-qr-payment.md | 2026-08-28 20:43:35 | Add QR Code Payment Dialog for Membership Plans |
+| 14 | 20260828-141343-member-membership-plans.md | 2026-08-28 14:13:43 | Add Member Membership Plans Page |
+| 15 | 20260828-101904-remove-redundant-members-title.md | 2026-08-28 10:19:04 | Redesign Members Page Header |
+| 16 | 20260828-101743-remove-temp-http-test.md | 2026-08-28 10:17:43 | Remove temp_http.php Test Script |
+| 17 | 20260828-101135-editable-member-profile-fields.md | 2026-08-28 10:11:35 | Make Member Profile Fields Editable |
+| 18 | 20260828-100505-add-member-data-to-profile.md | 2026-08-28 10:05:05 | Add Member Information to Profile Page |
+| 19 | 20260828-100107-member-layout-match-admin.md | 2026-08-28 10:01:07 | Member Layout Matched to Admin Layout Design |
+| 20 | 20260828-095715-organize-admin-member-folders.md | 2026-08-28 09:57:15 | Organize Backend & Frontend into Admin/Member Folders |
+| 21 | 20260828-092430-remove-profile-subtitle-photo-note.md | 2026-08-28 09:24:30 | Remove Profile Subtitle & Photo Storage Note |
+| 22 | 20260828-092153-profile-update.md | 2026-08-28 09:21:53 | Profile Update â€” Admin & Member (click FitPay Admin â†’ /profile, email read-only) |
+| 23 | 20260827-232403-remove-header-filters-sonner-photo-fix.md | 2026-08-27 23:24:03 | Remove Members Header/Filters + Sonner Toast (Right Side) + Photo 422 Fix |
+| 24 | 20260827-231259-equal-width-birthdate-gender-status.md | 2026-08-27 23:12:59 | Equal Width for Birthdate/Gender/Status |
+| 25 | 20260827-230411-reorder-birthdate-gender-status.md | 2026-08-27 23:04:11 | Reorder Members Form â€” Birthdate â†’ Gender â†’ Status |
+| 26 | 20260827-230300-members-upload-photo-to-users.md | 2026-08-27 23:03:00 | Members â€” Remove Help Texts, Move Photo to Users + Upload |
+| 27 | 20260827-230200-members-management-migration-photo-polish.md | 2026-08-27 23:02:00 | Members Management â€” Migration-First Fix + Photo + Polish |
+| 28 | 20260827-224509-remove-name-from-members.md | 2026-08-27 22:45:09 | Remove `name` Column from Members (Name Lives on Users) |
+| 29 | 20260827-223627-remove-redundant-member-columns.md | 2026-08-27 22:36:27 | Remove Redundant Member Columns (first_name/last_name/email) |
+| 30 | 20260827-222508-migration-single-file-redundant-fix.md | 2026-08-27 22:25:08 | Migration Single File & Redundant Columns Fix |
+| 31 | 20260827-221741-members-management-crud-search-filter-pagination.md | 2026-08-27 22:17:41 | Members Management â€” CRUD + Server Search/Filter/Pagination |
+| 32 | 20260827-220523-remove-admin-badge-topbar.md | 2026-08-27 22:05:23 | Remove ADMIN Badge from Topbar |
+| 33 | 20260827-220357-top-nav-same-as-side.md | 2026-08-27 22:03:57 | Top Nav Same as Side Nav (FitPay Admin) |
+| 34 | 20260827-220217-remove-top-nav-search-bell-avatar-logout.md | 2026-08-27 22:02:17 | Remove Top Nav Search / Bell / Avatar / Logout |
+| 35 | 20260827-220000-replace-settings-with-fitpay-admin.md | 2026-08-27 22:00:00 | Replace Settings with FitPay Admin |
+| 36 | 20260827-215902-sidebar-nav-scroll.md | 2026-08-27 21:59:02 | Sidebar Nav Scroll (Overview/Operations/Money/Insights) |
+| 37 | 20260827-215745-sidebar-fixed-no-vertical-move.md | 2026-08-27 21:57:45 | Sidebar Fixed â€” No Vertical Move |
+| 38 | 20260827-215514-member-and-admin-layout.md | 2026-08-27 21:55:14 | Member & Admin Layouts (Separate) |
+| 39 | 20260827-214640-register-default-member-no-role.md | 2026-08-27 21:46:40 | Register Defaults to Member (Role Removed) |
+| 40 | 20260827-214136-cursor-pointer-all-btns.md | 2026-08-27 21:41:36 | Cursor Pointer on All Buttons |
+| 41 | 20260827-213952-remove-footer-badges-and-password-hint.md | 2026-08-27 21:39:52 | Remove Footer Badges & Password Hint |
+| 42 | 20260827-213756-full-bg-not-left.md | 2026-08-27 21:37:56 | Full Background (Not Just Left) |
+| 43 | 20260827-213551-centered-card-left-bg.md | 2026-08-27 21:35:51 | Centered Card with Left Background |
+| 44 | 20260827-213248-remove-left-text.md | 2026-08-27 21:32:48 | Remove Extra Text on Left Hero |
+| 45 | 20260827-212836-animated-svg-no-image.md | 2026-08-27 21:28:36 | Animated SVG Gym Background (No Actual Images) |
+| 46 | 20260827-212447-gym-theme-readded.md | 2026-08-27 21:24:47 | Gym Theme Re-added to Login & Register |
+| 47 | 20260827-212134-revert-to-original-split.md | 2026-08-27 21:21:34 | Revert to Original Split Design |
+| 48 | 20260827-211635-split-login-register-alt.md | 2026-08-27 21:16:35 | Alternative Split Designs for Login & Register |
+| 49 | 20260827-211414-gym-theme-login-register.md | 2026-08-27 21:14:14 | Gym-Themed Login & Register Backgrounds |
+| 50 | 20260827-211019-palette-orange-to-teal.md | 2026-08-27 21:10:19 | Palette Refresh â€” Orange â†’ Teal |
+| 51 | 20260827-210613-jwt-auth-role-dashboards.md | 2026-08-27 21:06:13 | JWT Auth + Role Dashboards + Middleware + Seeder |
+| 52 | 20260827-194952-frontend-scaffold-jsx-tailwind-shadcn.md | 2026-08-27 19:49:52 | Frontend Scaffold â€” React JSX + Vite + Tailwind + shadcn/ui + lucide + axios |
+| 53 | 20260827-192322-fitpay-manuscript-scan.md | 2026-08-27 19:23:22 | FitPay Manuscript Scan & Spec Generation |

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreMemberRequest;
-use App\Http\Requests\UpdateMemberRequest;
-use App\Http\Resources\MemberResource;
+use App\Http\Requests\Admin\StoreMemberRequest;
+use App\Http\Requests\Admin\UpdateMemberRequest;
+use App\Http\Resources\Admin\MemberResource;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
