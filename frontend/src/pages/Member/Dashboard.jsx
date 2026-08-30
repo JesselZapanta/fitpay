@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CalendarCheck, ShieldCheck, CreditCard, Flame, Clock3, Dumbbell, Play, AlertTriangle, Receipt, Clock, CheckCircle2, XCircle, Crown, Info } from "lucide-react"
+import { CalendarCheck, ShieldCheck, CreditCard, Flame, Clock3, Dumbbell, Play, AlertTriangle, Receipt, Clock, CheckCircle2, XCircle, Crown, Info, Sun, Moon, Sunset, CalendarDays } from "lucide-react"
 import MemberLayout from "@/components/Layout/Member/MemberLayout"
 import StatCard from "@/components/StatCard"
 import api from "@/lib/api"
@@ -64,6 +64,12 @@ export default function MemberDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [now, setNow] = useState(new Date())
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -111,15 +117,52 @@ export default function MemberDashboard() {
     )
   }
 
+  const hour = now.getHours()
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
+  const GreetingIcon = hour < 12 ? Sun : hour < 18 ? Sunset : Moon
+  const dateStr = now.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  const timeStr = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+  const initials = (user?.name || data?.user?.name || "M").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+  const roleLabel = (data?.user?.role || user?.role || "member").toLowerCase()
+
   return (
     <MemberLayout title="My Dashboard">
       <div className="space-y-6 sm:space-y-8">
-        <div className="space-y-1.5">
-          <h1 className="font-display text-[22px] sm:text-[28px] font-semibold tracking-tight text-[var(--ink-900)] leading-none">
-            {data?.welcome || `Hi ${user?.name} 👋`}
-          </h1>
-          <p className="text-sm text-[var(--ink-600)]">Your personal fitness overview — track your progress and membership.</p>
-        </div>
+        <Card className="overflow-hidden rounded-2xl border-[var(--ink-300)] bg-white shadow-sm">
+          <div className="h-1 w-full bg-[var(--grow-500)]" />
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="flex size-12 sm:size-14 items-center justify-center rounded-2xl bg-[var(--grow-500)] text-white shadow-sm shrink-0">
+                  <span className="font-display font-bold text-lg sm:text-xl">{initials}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-widest uppercase text-[var(--grow-500)]">
+                    <GreetingIcon className="size-3.5" /> {greeting}
+                  </div>
+                  <h1 className="font-display text-[22px] sm:text-[28px] font-semibold tracking-tight text-[var(--ink-900)] leading-none truncate">
+                    Welcome, <span className="text-[var(--grow-500)]">{data?.user?.name || user?.name}</span>
+                  </h1>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--grow-500)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                      <ShieldCheck className="size-3" /> {roleLabel}
+                    </span>
+                    <span className="text-xs text-[var(--ink-600)] hidden sm:inline">{data?.user?.email || user?.email}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex lg:flex-col items-center lg:items-end gap-3 lg:text-right shrink-0 bg-[var(--surface-0)] lg:bg-transparent border lg:border-0 border-[var(--ink-300)] rounded-xl lg:rounded-none p-3 lg:p-0">
+                <div className="flex items-center gap-2 text-xs font-medium text-[var(--ink-900)]">
+                  <CalendarDays className="size-4 text-[var(--grow-500)] hidden sm:block" />
+                  <span>{dateStr}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-[var(--ink-900)] bg-white border border-[var(--ink-300)] rounded-full px-3 py-1.5 lg:ml-auto">
+                  <Clock className="size-3.5 text-[var(--grow-500)]" /> {timeStr}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {data?.latest_request &&
           (() => {
@@ -242,122 +285,7 @@ export default function MemberDashboard() {
               </Card>
             )
           })()}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {(data?.stats || []).map((s, idx) => {
-            const Icon = iconMap[s.icon] || Dumbbell
-            const tones = ["grow", "charge", "neutral", "warning"]
-            return <StatCard key={s.label} label={s.label} value={s.value} icon={Icon} trend={idx === 0 ? "keep it up!" : undefined} tone={tones[idx % tones.length]} />
-          })}
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-xl border-[var(--ink-300)] bg-white overflow-hidden">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
-                <Dumbbell className="size-5 text-[var(--charge-500)]" /> Weekly schedule
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Your trainer-planned sessions — stay consistent, grow stronger.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {(data?.schedule || []).map((row) => (
-                <div key={row.day} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--ink-300)] bg-[var(--surface-0)] p-3 sm:p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-[var(--charge-500)] text-white font-display font-bold text-sm">
-                      {row.day}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-[var(--ink-900)]">{row.activity}</div>
-                      <div className="text-xs text-[var(--ink-600)] flex items-center gap-1">
-                        <Clock3 className="size-3" /> {row.time}
-                      </div>
-                    </div>
-                  </div>
-                  <Button size="sm" className="rounded-full bg-white border border-[var(--ink-300)] text-[var(--ink-900)] hover:bg-[var(--charge-500)] hover:text-white hover:border-[var(--charge-500)] gap-1.5 min-h-9">
-                    <Play className="size-3.5" /> Start
-                  </Button>
-                </div>
-              ))}
-              <div className="rounded-xl bg-[var(--grow-100)] border border-[#DFF5E9] p-4">
-                <p className="text-sm font-semibold text-[var(--grow-500)]">Tip — Charge streak</p>
-                <p className="text-xs text-[var(--ink-600)] mt-1 leading-relaxed">
-                  You’ve checked in 3x this week. One more and you’ll beat last week’s record. The front-desk tablet is ready — just tap <span className="font-semibold text-[var(--ink-900)]">Check In</span>.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-4">
-            <Card className="rounded-xl border-[var(--ink-300)] bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 font-display text-base">
-                  <ShieldCheck className="size-5 text-[var(--grow-500)]" /> Membership
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {data?.current_plan ? (
-                  <div className="rounded-xl bg-[var(--surface-0)] border border-[var(--ink-300)] p-4">
-                    <div className="text-xs font-semibold tracking-widest uppercase text-[var(--ink-600)]">Current plan</div>
-                    <div className="mt-1 flex items-baseline gap-2 flex-wrap">
-                      <span className="font-display text-xl font-bold text-[var(--ink-900)]">{data.current_plan.plan_label}</span>
-                      <Badge className={`${data.current_plan.is_expired ? "bg-[#C43D3D] hover:bg-[#C43D3D]" : "bg-[var(--grow-500)] hover:bg-[var(--grow-500)]"} gap-1`}>
-                        <span className="size-1.5 rounded-full bg-white" /> {data.current_plan.is_expired ? "Expired" : "Active"}
-                      </Badge>
-                    </div>
-                    <div className="mt-1 text-xs text-[var(--ink-600)]">₱{Number(data.current_plan.amount).toLocaleString()} · {data.current_plan.plan_type}</div>
-                    <div className="mt-3 flex items-center justify-between text-xs">
-                      <span className="text-[var(--ink-600)]">Expires</span>
-                      <span className="font-mono font-medium text-[var(--ink-900)]">{data.current_plan.expires_date}</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-white border border-[var(--ink-300)] overflow-hidden">
-                      <div className="h-full bg-[var(--grow-500)] transition-all" style={{ width: `${data.current_plan.progress}%`, background: data.current_plan.is_expired ? "#C43D3D" : undefined }} />
-                    </div>
-                    <p className="text-[11px] text-[var(--ink-600)] mt-1.5">
-                      {data.current_plan.is_expired ? "No active membership" : `${data.current_plan.progress}% used · ${data.current_plan.days_left} days left — renew soon to keep your streak.`}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="rounded-xl bg-[var(--surface-0)] border border-dashed border-[var(--ink-300)] p-4 text-center">
-                    <Crown className="size-6 mx-auto text-[var(--ink-600)] opacity-40" />
-                    <div className="text-sm font-semibold text-[var(--ink-900)] mt-2">No active plan</div>
-                    <p className="text-xs text-[var(--ink-600)] mt-1">Choose a plan to start your membership.</p>
-                    <Button asChild size="sm" className="mt-3 bg-[var(--grow-500)] hover:bg-[#0F766E] text-white gap-1.5 min-h-9 cursor-pointer">
-                      <Link to="/member/membership"><Crown className="size-4" /> View Plans</Link>
-                    </Button>
-                  </div>
-                )}
-
-                {data?.current_plan && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="rounded-lg border border-[var(--ink-300)] bg-white p-3 text-center">
-                      <div className="text-[11px] font-semibold tracking-wide uppercase text-[var(--ink-600)]">Next payment</div>
-                      <div className="font-display font-bold text-[var(--ink-900)]">{new Date(data.current_plan.expires_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
-                      <div className="text-xs text-[var(--ink-600)]">₱{Number(data.current_plan.amount).toLocaleString()}</div>
-                    </div>
-                    <div className="rounded-lg border border-[var(--ink-300)] bg-white p-3 text-center">
-                      <div className="text-[11px] font-semibold tracking-wide uppercase text-[var(--ink-600)]">Attendance</div>
-                      <div className="font-display font-bold text-[var(--charge-500)]">12x</div>
-                      <div className="text-xs text-[var(--ink-600)]">this month</div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-xl border-[var(--ink-300)] bg-[var(--charge-500)] text-white overflow-hidden">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-white text-[var(--charge-500)]">
-                  <Flame className="size-6" />
-                </div>
-                <div>
-                  <div className="font-display font-semibold">5-day streak 🔥</div>
-                  <div className="text-sm text-white/90">You’re in the top 20% of members this month.</div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          </div>
         </div>
       </MemberLayout>
-  )
+   )
 }

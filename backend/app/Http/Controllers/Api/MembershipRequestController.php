@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\Membership;
 use App\Models\MembershipRequest;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -145,8 +146,9 @@ class MembershipRequestController extends Controller
         ]);
 
         $membership = null;
+        $payment = null;
 
-        DB::transaction(function () use ($membershipRequest, $data, &$membership) {
+        DB::transaction(function () use ($membershipRequest, $data, &$membership, &$payment) {
             $membershipRequest->update([
                 'status' => $data['status'],
                 'admin_note' => $data['admin_note'] ?? null,
@@ -178,6 +180,19 @@ class MembershipRequestController extends Controller
                 } else {
                     $membership = $existing;
                 }
+
+                if ($membership) {
+                    $existingPayment = Payment::where('membership_id', $membership->id)->first();
+                    if (!$existingPayment) {
+                        $payment = Payment::create([
+                            'user_id' => $membership->user_id,
+                            'membership_id' => $membership->id,
+                            'amount' => $membershipRequest->amount,
+                        ]);
+                    } else {
+                        $payment = $existingPayment;
+                    }
+                }
             }
         });
 
@@ -199,6 +214,15 @@ class MembershipRequestController extends Controller
                 'start_date' => $membership->start_date->format('Y-m-d'),
                 'end_date' => $membership->end_date->format('Y-m-d'),
                 'status' => $membership->status,
+            ];
+        }
+
+        if ($payment) {
+            $response['data']['payment'] = [
+                'id' => $payment->id,
+                'user_id' => $payment->user_id,
+                'membership_id' => $payment->membership_id,
+                'amount' => $payment->amount,
             ];
         }
 

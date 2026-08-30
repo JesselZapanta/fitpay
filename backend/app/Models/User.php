@@ -63,6 +63,21 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Member::class);
     }
 
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(Membership::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
         if (!$this->photo) return null;

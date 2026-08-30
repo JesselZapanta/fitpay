@@ -10,6 +10,12 @@ import AdminMembers from "@/pages/Admin/Members"
 import AdminMembershipRequests from "@/pages/Admin/MembershipRequests"
 import AdminMembershipRequestShow from "@/pages/Admin/MembershipRequestShow"
 import AdminMemberships from "@/pages/Admin/Memberships"
+import AdminPayments from "@/pages/Admin/Payments"
+import AdminAttendance from "@/pages/Admin/Attendance"
+import AdminReports from "@/pages/Admin/Reports"
+import MemberAttendance from "@/pages/Member/Attendance"
+import MemberHistory from "@/pages/Member/History"
+import MemberReports from "@/pages/Member/Reports"
 import Profile from "@/pages/Profile/Index"
 import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import MemberLayout from "@/components/Layout/Member/MemberLayout"
@@ -142,7 +148,7 @@ export default function App() {
             path="/admin/attendance"
             element={
               <ProtectedRoute roles={["admin"]}>
-                <AdminPlaceholder title="Attendance" />
+                <AdminAttendance />
               </ProtectedRoute>
             }
           />
@@ -150,7 +156,7 @@ export default function App() {
             path="/admin/payments"
             element={
               <ProtectedRoute roles={["admin"]}>
-                <AdminPlaceholder title="Payments" />
+                <AdminPayments />
               </ProtectedRoute>
             }
           />
@@ -166,7 +172,7 @@ export default function App() {
             path="/admin/reports"
             element={
               <ProtectedRoute roles={["admin"]}>
-                <AdminPlaceholder title="Reports" />
+                <AdminReports />
               </ProtectedRoute>
             }
           />
@@ -197,10 +203,10 @@ export default function App() {
             }
           />
           <Route
-            path="/member/schedule"
+            path="/member/attendance"
             element={
               <ProtectedRoute roles={["member"]}>
-                <MemberPlaceholder title="Schedule" />
+                <MemberAttendance />
               </ProtectedRoute>
             }
           />
@@ -208,15 +214,15 @@ export default function App() {
             path="/member/history"
             element={
               <ProtectedRoute roles={["member"]}>
-                <MemberPlaceholder title="History" />
+                <MemberHistory />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/member/billing"
+            path="/member/reports"
             element={
               <ProtectedRoute roles={["member"]}>
-                <MemberPlaceholder title="Billing" />
+                <MemberReports />
               </ProtectedRoute>
             }
           />

@@ -8,22 +8,20 @@ import {
   Dumbbell,
   LayoutDashboard,
   CalendarCheck,
-  CreditCard,
-  User,
   LogOut,
   Menu,
-  Heart,
   Crown,
+  Heart,
+  BarChart3,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 
 const memberNav = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/member/dashboard", group: "Overview" },
   { label: "Membership", icon: Crown, href: "/member/membership", group: "Overview" },
-  { label: "Schedule", icon: CalendarCheck, href: "/member/schedule", group: "Personal" },
+  { label: "Attendance", icon: CalendarCheck, href: "/member/attendance", group: "Personal" },
   { label: "History", icon: Heart, href: "/member/history", group: "Personal" },
-  { label: "Billing", icon: CreditCard, href: "/member/billing", group: "Account" },
-  { label: "Profile", icon: User, href: "/member/profile", group: "Account" },
+  { label: "Reports", icon: BarChart3, href: "/member/reports", group: "Insights" },
 ]
 
 function resolvePhotoUrl(photo, photoUrl) {
@@ -184,7 +182,7 @@ export default function MemberLayout({ children, title = "My Dashboard" }) {
 
         <main className="flex-1 w-full min-w-0 md:ml-[240px]">
           <div className="mx-auto max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-20 md:pb-8">
-            {title !== "Profile" && title !== "Membership" && title !== "My Dashboard" && (
+            {title !== "Profile" && title !== "Membership" && title !== "My Dashboard" && title !== "History" && title !== "Attendance" && title !== "Reports" && (
               <div className="mb-4 sm:mb-6 hidden sm:block">
                 <h1 className="font-display text-[20px] sm:text-[22px] font-semibold text-[var(--ink-900)]">{title}</h1>
                 <p className="text-xs sm:text-sm text-[var(--ink-600)]">Member workspace • <span className="font-mono text-[11px] bg-[var(--grow-100)] px-1.5 py-0.5 rounded text-[var(--grow-500)]">role:member</span> • personal & motivational</p>
@@ -196,8 +194,8 @@ export default function MemberLayout({ children, title = "My Dashboard" }) {
       </div>
 
       <div className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-[var(--ink-300)] bg-white">
-        <div className="grid grid-cols-5 h-14">
-          {memberNav.slice(0, 4).map((item) => {
+        <div className="grid grid-cols-6 h-14">
+          {memberNav.map((item) => {
             const active = isActive(item.href)
             return (
               <Link key={item.href} to={item.href} className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${active ? "text-[var(--grow-500)] bg-[var(--grow-100)]" : "text-[var(--ink-600)]"}`}>
@@ -206,30 +204,10 @@ export default function MemberLayout({ children, title = "My Dashboard" }) {
               </Link>
             )
           })}
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-[var(--ink-600)] cursor-pointer">
-                <Menu className="size-5" />
-                <span>More</span>
-              </button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-2xl bg-white">
-              <SheetHeader>
-                <SheetTitle className="font-display">More</SheetTitle>
-                <SheetDescription>Member modules</SheetDescription>
-              </SheetHeader>
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                {memberNav.slice(4).map((item) => (
-                  <Link key={item.href} to={item.href} className="flex items-center gap-3 rounded-xl border border-[var(--ink-300)] p-4 hover:border-[var(--grow-500)] hover:bg-[var(--grow-100)]">
-                    <item.icon className="size-5 text-[var(--grow-500)]" /> {item.label}
-                  </Link>
-                ))}
-                <button onClick={() => setLogoutOpen(true)} className="col-span-2 flex items-center justify-center gap-2 rounded-xl border border-[#FBE2E2] bg-[#FBE2E2] p-4 text-[#C43D3D] font-medium cursor-pointer">
-                  <LogOut className="size-5" /> Log out
-                </button>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <button onClick={() => setLogoutOpen(true)} className="flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-[#C43D3D] cursor-pointer">
+            <LogOut className="size-5" />
+            <span className="text-[10px] leading-none">Log out</span>
+          </button>
         </div>
       </div>
     </div>

@@ -186,7 +186,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }) {
 
         <main className="flex-1 w-full min-w-0 md:ml-[240px]">
           <div className="mx-auto max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-20 md:pb-8">
-            {title !== "Profile" && title !== "Members" && title !== "Membership Requests" && title !== "Request Details" && (
+            {title !== "Profile" && title !== "Members" && title !== "Membership Requests" && title !== "Request Details" && title !== "Admin Dashboard" && (
               <div className="mb-4 sm:mb-6 hidden sm:block">
                 <h1 className="font-display text-[20px] sm:text-[22px] font-semibold text-[var(--ink-900)]">{title}</h1>
                 <p className="text-xs sm:text-sm text-[var(--ink-600)]">Admin workspace</p>

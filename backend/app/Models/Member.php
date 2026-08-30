@@ -103,4 +103,31 @@ class Member extends Model
 
         return $query->where('gender', $gender);
     }
+
+    public function scopeHasActiveMembership($query)
+    {
+        return $query->whereHas('user', function ($q) {
+            $q->whereHas('memberships', function ($mq) {
+                $mq->where('status', 'active')->where('end_date', '>=', today());
+            });
+        });
+    }
+
+    public function scopeActiveMembershipStatus($query, ?string $filter)
+    {
+        if (blank($filter) || $filter === 'all') return $query;
+        if ($filter === 'active') {
+            return $query->whereHas('user', function ($q) {
+                $q->whereHas('memberships', function ($mq) {
+                    $mq->where('status', 'active')->where('end_date', '>=', today());
+                });
+            });
+        }
+        if ($filter === 'inactive') {
+            return $query->whereDoesntHave('user.memberships', function ($mq) {
+                $mq->where('status', 'active')->where('end_date', '>=', today());
+            });
+        }
+        return $query;
+    }
 }

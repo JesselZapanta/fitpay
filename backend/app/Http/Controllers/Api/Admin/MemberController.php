@@ -22,6 +22,8 @@ class MemberController extends Controller
             'search' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'in:all,active,inactive,expired'],
             'gender' => ['nullable', 'in:all,male,female,other'],
+            'membership' => ['nullable', 'in:all,active,expired'],
+            'has_active_membership' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'sort_by' => ['nullable', 'in:id,member_code,name,created_at,status'],
@@ -36,6 +38,13 @@ class MemberController extends Controller
             ->search($request->input('search'))
             ->status($request->input('status'))
             ->gender($request->input('gender'));
+
+        if ($request->filled('membership') && $request->input('membership') !== 'all') {
+            $query->activeMembershipStatus($request->input('membership'));
+        }
+        if ($request->boolean('has_active_membership')) {
+            $query->hasActiveMembership();
+        }
 
         if ($sortBy === 'name') {
             $query->join('users', 'users.id', '=', 'members.user_id')
