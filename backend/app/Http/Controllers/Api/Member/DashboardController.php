@@ -28,9 +28,9 @@ class DashboardController extends Controller
             $req = $membership->membershipRequest;
             $labels = ['daily' => 'Daily', 'monthly' => 'Monthly', 'yearly' => 'Yearly'];
             $planType = $req?->plan_type ?? $membership->membershipRequest?->plan_type ?? 'monthly';
-            $start = Carbon::parse($membership->start_date);
-            $expiresAt = Carbon::parse($membership->end_date);
-            $now = Carbon::now();
+            $start = Carbon::parse($membership->start_date)->timezone('Asia/Manila');
+            $expiresAt = Carbon::parse($membership->end_date)->timezone('Asia/Manila');
+            $now = Carbon::now('Asia/Manila');
             $days = $start->diffInDays($expiresAt) ?: 1;
             $elapsed = max(0, $now->diffInDays($start, false));
             $progress = $days > 0 ? min(100, max(0, ($elapsed / $days) * 100)) : 0;
@@ -64,14 +64,16 @@ class DashboardController extends Controller
             if ($currentPlan) {
                 $labels = ['daily' => 'Daily', 'monthly' => 'Monthly', 'yearly' => 'Yearly'];
                 $approvedAt = $currentPlan->updated_at ?? $currentPlan->created_at;
+                $approvedAt = $approvedAt ? Carbon::parse($approvedAt)->timezone('Asia/Manila') : null;
                 $expiresAt = match ($currentPlan->plan_type) {
                     'daily' => Carbon::parse($approvedAt)->addDay(),
                     'monthly' => Carbon::parse($approvedAt)->addMonth(),
                     'yearly' => Carbon::parse($approvedAt)->addYear(),
                     default => Carbon::parse($approvedAt)->addMonth(),
                 };
+                $expiresAt = $expiresAt->timezone('Asia/Manila');
                 $days = Carbon::parse($approvedAt)->diffInDays($expiresAt) ?: 1;
-                $now = Carbon::now();
+                $now = Carbon::now('Asia/Manila');
                 $elapsed = $approvedAt ? $now->diffInDays($approvedAt, false) : 0;
                 $elapsed = max(0, $elapsed);
                 $progress = $days > 0 ? min(100, max(0, ($elapsed / $days) * 100)) : 0;

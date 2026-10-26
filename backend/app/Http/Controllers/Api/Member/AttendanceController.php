@@ -40,8 +40,8 @@ class AttendanceController extends Controller
         $paginator = $query->paginate($request->get('per_page', 15))->appends($request->query());
 
         $data = $paginator->getCollection()->map(function (Attendance $a) {
-            $checkIn = $a->check_in ? Carbon::parse($a->check_in) : null;
-            $checkOut = $a->check_out ? Carbon::parse($a->check_out) : null;
+            $checkIn = $a->check_in ? Carbon::parse($a->check_in)->timezone('Asia/Manila') : null;
+            $checkOut = $a->check_out ? Carbon::parse($a->check_out)->timezone('Asia/Manila') : null;
             $duration = null;
             if ($checkIn && $checkOut) {
                 $diff = $checkIn->diff($checkOut);
@@ -62,20 +62,22 @@ class AttendanceController extends Controller
             ];
         });
 
+        $manilaNow = Carbon::now('Asia/Manila');
+        $manilaToday = Carbon::today('Asia/Manila');
         $total = Attendance::where('member_id', $member->id)->count();
-        $thisMonth = Attendance::where('member_id', $member->id)->whereMonth('attendance_date', now()->month)->whereYear('attendance_date', now()->year)->count();
-        $today = Attendance::where('member_id', $member->id)->where('attendance_date', today())->first();
+        $thisMonth = Attendance::where('member_id', $member->id)->whereMonth('attendance_date', $manilaNow->month)->whereYear('attendance_date', $manilaNow->year)->count();
+        $today = Attendance::where('member_id', $member->id)->where('attendance_date', $manilaToday->toDateString())->first();
         $todayData = null;
         if ($today) {
             $todayData = [
                 'attendance_date' => $today->attendance_date->format('Y-m-d'),
-                'check_in' => $today->check_in ? Carbon::parse($today->check_in)->format('H:i') : null,
-                'check_out' => $today->check_out ? Carbon::parse($today->check_out)->format('H:i') : null,
+                'check_in' => $today->check_in ? Carbon::parse($today->check_in)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_out' => $today->check_out ? Carbon::parse($today->check_out)->timezone('Asia/Manila')->format('H:i') : null,
                 'status' => $today->check_in && !$today->check_out ? 'present' : ($today->check_in && $today->check_out ? 'completed' : 'unknown'),
             ];
         }
 
-        $hasActive = \App\Models\Membership::where('user_id', $user->id)->where('status', 'active')->where('end_date', '>=', today())->exists();
+        $hasActive = \App\Models\Membership::where('user_id', $user->id)->where('status', 'active')->where('end_date', '>=', $manilaToday->toDateString())->exists();
 
         return response()->json([
             'data' => $data,
@@ -109,12 +111,13 @@ class AttendanceController extends Controller
         if (!$member) {
             return response()->json(['message' => 'Member profile not found.'], 404);
         }
-        $hasActive = \App\Models\Membership::where('user_id', $user->id)->where('status', 'active')->where('end_date', '>=', today())->exists();
+        $manilaToday = Carbon::today('Asia/Manila')->toDateString();
+        $hasActive = \App\Models\Membership::where('user_id', $user->id)->where('status', 'active')->where('end_date', '>=', $manilaToday)->exists();
         if (!$hasActive) {
             return response()->json(['message' => 'No active membership (most current fee). Please renew.'], 422);
         }
-        $date = today()->format('Y-m-d');
-        $now = now()->format('H:i:s');
+        $date = Carbon::today('Asia/Manila')->format('Y-m-d');
+        $now = Carbon::now('Asia/Manila')->format('H:i:s');
         $attendance = Attendance::where('member_id', $member->id)->where('attendance_date', $date)->first();
         if ($attendance) {
             if ($attendance->check_in && is_null($attendance->check_out)) {
@@ -134,7 +137,7 @@ class AttendanceController extends Controller
         }
         return response()->json(['message' => 'Checked in successfully.', 'data' => [
             'attendance_date' => $attendance->attendance_date->format('Y-m-d'),
-            'check_in' => Carbon::parse($attendance->check_in)->format('H:i'),
+            'check_in' => Carbon::parse($attendance->check_in)->timezone('Asia/Manila')->format('H:i'),
             'status' => 'present',
         ]]);
     }
@@ -146,8 +149,8 @@ class AttendanceController extends Controller
         if (!$member) {
             return response()->json(['message' => 'Member profile not found.'], 404);
         }
-        $date = today()->format('Y-m-d');
-        $now = now()->format('H:i:s');
+        $date = Carbon::today('Asia/Manila')->format('Y-m-d');
+        $now = Carbon::now('Asia/Manila')->format('H:i:s');
         $attendance = Attendance::where('member_id', $member->id)->where('attendance_date', $date)->first();
         if (!$attendance || !$attendance->check_in) {
             return response()->json(['message' => 'Not checked in today.'], 422);
@@ -158,8 +161,8 @@ class AttendanceController extends Controller
         $attendance->update(['check_out' => $now]);
         return response()->json(['message' => 'Checked out successfully.', 'data' => [
             'attendance_date' => $attendance->attendance_date->format('Y-m-d'),
-            'check_in' => Carbon::parse($attendance->check_in)->format('H:i'),
-            'check_out' => Carbon::parse($attendance->check_out)->format('H:i'),
+            'check_in' => Carbon::parse($attendance->check_in)->timezone('Asia/Manila')->format('H:i'),
+            'check_out' => Carbon::parse($attendance->check_out)->timezone('Asia/Manila')->format('H:i'),
             'status' => 'completed',
         ]]);
     }

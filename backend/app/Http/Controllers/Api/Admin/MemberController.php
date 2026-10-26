@@ -127,6 +127,10 @@ class MemberController extends Controller
             $user->email = $data['email'];
         }
 
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+        }
+
         if ($request->hasFile('photo')) {
             if ($user->photo && Storage::disk('public')->exists($user->photo)) {
                 Storage::disk('public')->delete($user->photo);
@@ -169,7 +173,7 @@ class MemberController extends Controller
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'] ?? Str::random(10) . '@fitpay.local',
-                'password' => Hash::make(Str::random(12)),
+                'password' => isset($data['password']) && $data['password'] ? Hash::make($data['password']) : Hash::make(Str::random(12)),
                 'role' => 'member',
                 'email_verified_at' => now(),
             ]);
@@ -181,6 +185,10 @@ class MemberController extends Controller
 
         if (isset($data['email'])) {
             $user->email = $data['email'];
+        }
+
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
         }
 
         if ($request->hasFile('photo')) {

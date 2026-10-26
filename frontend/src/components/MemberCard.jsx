@@ -15,8 +15,8 @@ export default function MemberCard({ member }) {
           <Badge variant={member.status === "active" ? "default" : "secondary"}>{member.status}</Badge>
         </div>
         <div className="flex gap-2 pt-2 border-t">
-          <Button variant="outline" size="sm" className="flex-1 min-h-9">View</Button>
-          <Button variant="ghost" size="sm" className="flex-1 min-h-9">Edit</Button>
+          <Button variant="outline" size="sm" className="flex-1 min-h-11">View</Button>
+          <Button variant="ghost" size="sm" className="flex-1 min-h-11">Edit</Button>
         </div>
       </CardContent>
     </Card>

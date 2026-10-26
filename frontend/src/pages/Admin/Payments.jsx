@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Search, X, Filter, ChevronLeft, ChevronRight, CreditCard, CalendarDays, Receipt, DollarSign, User } from "lucide-react"
+import { Search, X, Filter, ChevronLeft, ChevronRight, CreditCard, CalendarDays, Receipt, DollarSign, User, Plus, AlertCircle } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import api from "@/lib/api"
 
@@ -18,6 +19,7 @@ const planBadge = {
 }
 
 export default function AdminPayments() {
+  const navigate = useNavigate()
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -69,14 +71,19 @@ export default function AdminPayments() {
                   )}
                 </p>
               </div>
-              <div className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--ink-300)] bg-[var(--surface-0)] px-3 py-2">
-                <div className="size-8 rounded-lg bg-[var(--charge-500)] text-white inline-flex items-center justify-center">
-                  <DollarSign className="size-4" />
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--ink-300)] bg-[var(--surface-0)] px-3 py-2">
+                  <div className="size-8 rounded-lg bg-[var(--charge-500)] text-white inline-flex items-center justify-center">
+                    <DollarSign className="size-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Total on page</div>
+                    <div className="font-display font-bold text-sm text-[var(--ink-900)]">₱{totalAmount.toLocaleString()}</div>
+                  </div>
                 </div>
-                <div className="leading-tight">
-                  <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Total on page</div>
-                  <div className="font-display font-bold text-sm text-[var(--ink-900)]">₱{totalAmount.toLocaleString()}</div>
-                </div>
+                <Button onClick={() => navigate("/admin/payments/create")} className="h-11 gap-1.5 bg-[var(--charge-500)] hover:bg-[var(--charge-600)] text-white font-semibold text-[14px] shadow-sm w-full sm:w-auto">
+                  <Plus className="size-4" /> Add payment
+                </Button>
               </div>
             </div>
           </CardContent>

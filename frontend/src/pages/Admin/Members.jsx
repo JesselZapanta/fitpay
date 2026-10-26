@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react"
+﻿import { useEffect, useState, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Search, Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Users, Filter, X, Image as ImageIcon, Mail, Phone, MapPin, Calendar, UserRound, Upload, Trash } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, Eye, EyeOff, ChevronLeft, ChevronRight, Users, Filter, X, Image as ImageIcon, Mail, Phone, MapPin, Calendar, UserRound, Upload, Trash, User, Lock, Check, ArrowLeft, ArrowRight } from "lucide-react"
 import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import api from "@/lib/api"
 import { toast } from "sonner"
@@ -59,6 +59,8 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    password: "",
+    password_confirmation: "",
     phone: "",
     address: "",
     birthdate: "",
@@ -68,13 +70,23 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
   const [photoFile, setPhotoFile] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [errors, setErrors] = useState({})
+  const [step, setStep] = useState(1)
+  const [show, setShow] = useState(false)
   const fileRef = useRef(null)
+
+  const STEPS = [
+    { id: 1, label: "Account", icon: User },
+    { id: 2, label: "Member", icon: Phone },
+    { id: 3, label: "Security", icon: Lock },
+  ]
 
   useEffect(() => {
     if (initial) {
       setForm({
         name: initial.name || "",
         email: initial.email || "",
+        password: "",
+        password_confirmation: "",
         phone: initial.phone || "",
         address: initial.address || "",
         birthdate: initial.birthdate || "",
@@ -84,11 +96,13 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
       setPhotoFile(null)
       setPhotoPreview(resolvePhotoUrl(initial.photo, initial.photo_url) || null)
     } else {
-      setForm({ name: "", email: "", phone: "", address: "", birthdate: "", gender: "", status: "active" })
+      setForm({ name: "", email: "", password: "", password_confirmation: "", phone: "", address: "", birthdate: "", gender: "", status: "active" })
       setPhotoFile(null)
       setPhotoPreview(null)
     }
     setErrors({})
+    setStep(1)
+    setShow(false)
     if (fileRef.current) fileRef.current.value = ""
   }, [initial, open])
 
@@ -126,13 +140,67 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
     if (fileRef.current) fileRef.current.value = ""
   }
 
+  const validateStep = (s) => {
+    if (s === 1) {
+      if (!form.name.trim()) return "Full name is required."
+      return null
+    }
+    if (s === 3) {
+      if (!initial) {
+        if (!form.password) return "Password is required."
+        if (form.password.length < 8) return "Password must be at least 8 characters."
+        if (form.password !== form.password_confirmation) return "Passwords do not match."
+      } else if (form.password) {
+        if (form.password.length < 8) return "Password must be at least 8 characters."
+        if (form.password !== form.password_confirmation) return "Passwords do not match."
+      }
+      return null
+    }
+    return null
+  }
+
+  const handleNext = () => {
+    const msg = validateStep(step)
+    if (msg) {
+      setErrors((prev) => ({ ...prev, _step: msg }))
+      return
+    }
+    setErrors((prev) => ({ ...prev, _step: undefined }))
+    setStep((v) => Math.min(3, v + 1))
+  }
+
+  const handleBack = () => {
+    setErrors((prev) => ({ ...prev, _step: undefined }))
+    setStep((v) => Math.max(1, v - 1))
+  }
+
   const submit = async (e) => {
     e.preventDefault()
+    if (step !== 3) {
+      handleNext()
+      return
+    }
+    const m1 = validateStep(1)
+    if (m1) {
+      setErrors((prev) => ({ ...prev, _step: m1 }))
+      setStep(1)
+      return
+    }
+    const m3 = validateStep(3)
+    if (m3) {
+      setErrors((prev) => ({ ...prev, _step: m3 }))
+      setStep(3)
+      return
+    }
     setErrors({})
     try {
       const fd = new FormData()
       fd.append("name", form.name)
       if (form.email) fd.append("email", form.email)
+      if (form.password) {
+        fd.append("password", form.password)
+        fd.append("password_confirmation", form.password_confirmation)
+      }
       if (form.phone) fd.append("phone", form.phone)
       if (form.address) fd.append("address", form.address)
       if (form.birthdate) fd.append("birthdate", form.birthdate)
@@ -145,179 +213,292 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {})
+        const keys = Object.keys(err.response.data.errors || {})
+        if (keys.some(k => ["name","email","password"].includes(k))) setStep(1)
+        else if (keys.some(k => ["phone","address"].includes(k))) setStep(2)
+        else setStep(3)
       }
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] max-h-[92vh] overflow-y-auto bg-white p-0 gap-0">
+      <DialogContent className="sm:max-w-[560px] max-h-[92vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)] bg-white p-0 gap-0">
         <div className="sticky top-0 z-10 bg-white border-b border-[var(--ink-300)] px-4 sm:px-6 py-4">
-          <DialogHeader className="text-left space-y-1">
-            <DialogTitle className="font-display text-lg flex items-center gap-2">
-              <span className="size-8 rounded-lg bg-[var(--charge-100)] border border-[var(--charge-500)]/15 inline-flex items-center justify-center">
-                <Users className="size-4 text-[var(--charge-500)]" />
-              </span>
-              {initial ? "Edit member" : "Add member"}
-            </DialogTitle>
-            <DialogDescription className="sr-only">{initial ? "Edit member" : "Create new member"}</DialogDescription>
+          <DialogHeader className="text-center space-y-3">
+            <div className="mx-auto flex size-9 items-center justify-center rounded-xl bg-[var(--charge-500)] text-white shadow">
+              <Users className="size-5" />
+            </div>
+            <div>
+              <DialogTitle className="font-display text-[19px] font-semibold tracking-tight text-[var(--ink-900)] leading-none text-center">{initial ? "Edit member" : "Add member"}</DialogTitle>
+              <DialogDescription className="text-[12px] text-[var(--ink-600)] mt-1 text-center">Step {step} of {STEPS.length} — {STEPS[step-1].label}</DialogDescription>
+            </div>
+            <div className="pt-1">
+              <div className="flex items-center justify-between">
+                {STEPS.map((s, idx) => {
+                  const Icon = s.icon
+                  const isActive = step === s.id
+                  const isDone = step > s.id
+                  return (
+                    <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className={`flex size-7 shrink-0 items-center justify-center rounded-full border-[1.5px] text-[11px] font-bold transition-all ${isDone ? "bg-[var(--charge-500)] border-[var(--charge-500)] text-white" : isActive ? "bg-[var(--charge-500)] border-[var(--charge-500)] text-white" : "bg-white border-[var(--ink-300)] text-[var(--ink-600)]"}`}>
+                          {isDone ? <Check className="size-3.5" /> : <Icon className="size-3.5" />}
+                        </div>
+                        <span className={`hidden sm:block text-[11px] font-semibold tracking-wide leading-none ${isActive ? "text-[var(--ink-900)]" : isDone ? "text-[var(--charge-500)]" : "text-[var(--ink-600)]"}`}>{s.label}</span>
+                      </div>
+                      {idx < STEPS.length - 1 && (
+                        <div className={`flex-1 h-0.5 mx-2 sm:mx-3 rounded-full transition-colors ${step > s.id ? "bg-[var(--charge-500)]" : "bg-[var(--ink-300)]"}`} />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mt-2.5 flex gap-1">
+                {STEPS.map((s) => (
+                  <div key={s.id} className={`h-1 flex-1 rounded-full transition-colors ${step >= s.id ? "bg-[var(--charge-500)]" : "bg-[var(--ink-300)]/60"}`} />
+                ))}
+              </div>
+            </div>
           </DialogHeader>
         </div>
 
         <form onSubmit={submit} className="px-4 sm:px-6 py-4 space-y-4">
-          <div className="flex gap-4 items-start">
-            <Avatar photo={photoPreview} name={form.name} size="lg" />
-            <div className="flex-1 min-w-0 space-y-2">
-              <Label htmlFor="photo" className="text-xs font-medium flex items-center gap-1.5">
-                <ImageIcon className="size-3.5 text-[var(--ink-600)]" /> Photo
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  ref={fileRef}
-                  id="photo"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/jpg"
-                  onChange={onFileChange}
-                  className={`h-10 flex-1 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border file:border-[var(--ink-300)] file:bg-[var(--surface-0)] file:text-xs file:font-medium hover:file:bg-white cursor-pointer ${errors.photo ? "border-[#C43D3D]" : ""}`}
-                />
-                {photoPreview && (
-                  <Button type="button" variant="outline" size="icon" className="size-10 shrink-0 cursor-pointer" onClick={clearPhoto} aria-label="Remove photo">
-                    <Trash className="size-4" />
-                  </Button>
-                )}
+          {errors._step && (
+            <div className="flex gap-2 rounded-lg border border-[#FCE8E8] bg-[#FBE2E2] px-3 py-2 text-[13px] leading-snug text-[#C43D3D]">
+              <X className="size-3.5 shrink-0 mt-0.5" />
+              <span>{errors._step}</span>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[var(--charge-500)]">
+                <User className="size-3" /> Account
               </div>
-              {errors.photo && <p className="text-[11px] text-[#C43D3D]">{errors.photo[0]}</p>}
-              <p className="text-[11px] text-[var(--ink-600)] flex items-center gap-1 leading-tight">
-                <Upload className="size-3 shrink-0" /> Upload JPG/PNG/WebP, max 5MB.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-xs font-medium">
-                Full name <span className="text-[#C43D3D]">*</span>
-              </Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="Juan Dela Cruz"
-                className={`h-10 ${errors.name ? "border-[#C43D3D]" : ""}`}
-              />
-              {errors.name && <p className="text-[11px] text-[#C43D3D]">{errors.name[0]}</p>}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--ink-600)]" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  placeholder="juan@example.com"
-                  className={`h-10 pl-9 ${errors.email ? "border-[#C43D3D]" : ""}`}
-                />
+              <div className="flex gap-4 items-start">
+                <Avatar photo={photoPreview} name={form.name} size="lg" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <Label htmlFor="photo" className="text-[13px] font-medium flex items-center gap-1.5">
+                    <ImageIcon className="size-3.5 text-[var(--ink-600)]" /> Photo
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      ref={fileRef}
+                      id="photo"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      onChange={onFileChange}
+                      className={`h-11 flex-1 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border file:border-[var(--ink-300)] file:bg-[var(--surface-0)] file:text-xs file:font-medium hover:file:bg-white cursor-pointer ${errors.photo ? "border-[#C43D3D]" : ""}`}
+                    />
+                    {photoPreview && (
+                      <Button type="button" variant="outline" size="icon" className="size-11 shrink-0 cursor-pointer" onClick={clearPhoto} aria-label="Remove photo">
+                        <Trash className="size-4" />
+                      </Button>
+                    )}
+                  </div>
+                  {errors.photo && <p className="text-[11px] text-[#C43D3D]">{errors.photo[0]}</p>}
+                  <p className="text-[11px] text-[var(--ink-600)] flex items-center gap-1 leading-tight">
+                    <Upload className="size-3 shrink-0" /> Upload JPG/PNG/WebP, max 5MB.
+                  </p>
+                </div>
               </div>
-              {errors.email ? (
-                <p className="text-[11px] text-[#C43D3D]">{errors.email[0]}</p>
-              ) : (
-                <p className="text-[11px] text-[var(--ink-600)]">Unique per user. Leave blank to auto-generate @fitpay.local.</p>
-              )}
+
+              <div className="space-y-2.5">
+                <div className="space-y-1">
+                  <Label htmlFor="name" className="text-[13px] font-medium text-[var(--ink-900)]">
+                    Full name <span className="text-[#C43D3D]">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    placeholder="Juan Dela Cruz"
+                    className={`h-11 rounded-lg border-[var(--ink-300)] bg-white focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[14px] ${errors.name ? "border-[#C43D3D]" : ""}`}
+                  />
+                  {errors.name && <p className="text-[11px] text-[#C43D3D]">{errors.name[0]}</p>}
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-[13px] font-medium">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--ink-600)]" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      placeholder="juan@example.com"
+                      className={`h-11 pl-9 rounded-lg text-[14px] ${errors.email ? "border-[#C43D3D]" : ""}`}
+                    />
+                  </div>
+                  {errors.email ? (
+                    <p className="text-[11px] text-[#C43D3D]">{errors.email[0]}</p>
+                  ) : (
+                    <p className="text-[11px] text-[var(--ink-600)]">Unique per user. Leave blank to auto-generate @fitpay.local.</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-xs font-medium flex items-center gap-1.5">
-              <Phone className="size-3.5 text-[var(--ink-600)]" /> Phone
-            </Label>
-            <Input
-              id="phone"
-              value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-              placeholder="0912 345 6789"
-              className={`h-10 ${errors.phone ? "border-[#C43D3D]" : ""}`}
-            />
-            {errors.phone && <p className="text-[11px] text-[#C43D3D]">{errors.phone[0]}</p>}
-          </div>
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[var(--ink-600)]">
+                <Phone className="size-3" /> Member
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="space-y-1">
+                  <Label htmlFor="phone" className="text-[13px] font-medium flex items-center gap-1.5">
+                    <Phone className="size-3.5 text-[var(--ink-600)]" /> Phone
+                  </Label>
+                  <Input
+                    id="phone"
+                    value={form.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    placeholder="0912 345 6789"
+                    className={`h-11 rounded-lg text-[14px] ${errors.phone ? "border-[#C43D3D]" : ""}`}
+                  />
+                  {errors.phone && <p className="text-[11px] text-[#C43D3D]">{errors.phone[0]}</p>}
+                </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="address" className="text-xs font-medium flex items-center gap-1.5">
-              <MapPin className="size-3.5 text-[var(--ink-600)]" /> Address
-            </Label>
-            <Textarea
-              id="address"
-              value={form.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              placeholder="123 Main St, Barangay, City"
-              rows={2}
-              className={`resize-none min-h-[72px] ${errors.address ? "border-[#C43D3D]" : ""}`}
-            />
-            {errors.address && <p className="text-[11px] text-[#C43D3D]">{errors.address[0]}</p>}
-          </div>
+                <div className="space-y-1">
+                  <Label htmlFor="address" className="text-[13px] font-medium flex items-center gap-1.5">
+                    <MapPin className="size-3.5 text-[var(--ink-600)]" /> Address
+                  </Label>
+                  <Input
+                    id="address"
+                    value={form.address}
+                    onChange={(e) => handleChange("address", e.target.value)}
+                    placeholder="123 Main St, Barangay, City"
+                    className={`h-11 rounded-lg text-[14px] ${errors.address ? "border-[#C43D3D]" : ""}`}
+                  />
+                  {errors.address && <p className="text-[11px] text-[#C43D3D]">{errors.address[0]}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="space-y-1 min-w-0">
+                  <Label htmlFor="birthdate" className="text-[13px] font-medium flex items-center gap-1.5">
+                    <Calendar className="size-3.5 text-[var(--ink-600)]" /> Birthdate
+                  </Label>
+                  <Input
+                    id="birthdate"
+                    type="date"
+                    value={form.birthdate}
+                    onChange={(e) => handleChange("birthdate", e.target.value)}
+                    className={`h-11 w-full min-w-0 rounded-lg text-[14px] ${errors.birthdate ? "border-[#C43D3D]" : ""}`}
+                  />
+                  {errors.birthdate && <p className="text-[11px] text-[#C43D3D]">{errors.birthdate[0]}</p>}
+                </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="space-y-1.5 min-w-0">
-              <Label htmlFor="birthdate" className="text-xs font-medium flex items-center gap-1.5">
-                <Calendar className="size-3.5 text-[var(--ink-600)]" /> Birthdate
-              </Label>
-              <Input
-                id="birthdate"
-                type="date"
-                value={form.birthdate}
-                onChange={(e) => handleChange("birthdate", e.target.value)}
-                className={`h-10 w-full min-w-0 ${errors.birthdate ? "border-[#C43D3D]" : ""}`}
-              />
-              {errors.birthdate && <p className="text-[11px] text-[#C43D3D]">{errors.birthdate[0]}</p>}
+                <div className="space-y-1 min-w-0">
+                  <Label className="text-[13px] font-medium">Gender</Label>
+                  <Select value={form.gender || "none"} onValueChange={(v) => handleChange("gender", v === "none" ? "" : v)}>
+                    <SelectTrigger className="h-11 w-full rounded-lg text-[14px]"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">— None —</SelectItem>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.gender && <p className="text-[11px] text-[#C43D3D]">{errors.gender[0]}</p>}
+                </div>
+
+                <div className="space-y-1 min-w-0">
+                  <Label className="text-[13px] font-medium">Status</Label>
+                  <Select value={form.status} onValueChange={(v) => handleChange("status", v)}>
+                    <SelectTrigger className="h-11 w-full rounded-lg text-[14px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.status && <p className="text-[11px] text-[#C43D3D]">{errors.status[0]}</p>}
+                </div>
+              </div>
             </div>
+          )}
 
-            <div className="space-y-1.5 min-w-0">
-              <Label className="text-xs font-medium">Gender</Label>
-              <Select value={form.gender || "none"} onValueChange={(v) => handleChange("gender", v === "none" ? "" : v)}>
-                <SelectTrigger className="h-10 w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— None —</SelectItem>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.gender && <p className="text-[11px] text-[#C43D3D]">{errors.gender[0]}</p>}
-            </div>
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[var(--charge-500)]">
+                <Lock className="size-3" /> Security
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="space-y-1">
+                  <Label htmlFor="password" className="text-[13px] font-medium text-[var(--ink-900)] flex items-center gap-1.5">
+                    <Lock className="size-3.5 text-[var(--ink-600)]" /> Password {!initial && <span className="text-[#C43D3D]">*</span>}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={show ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      placeholder="••••••••"
+                      className={`h-11 rounded-lg border-[var(--ink-300)] bg-white pr-9 focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[14px] ${errors.password ? "border-[#C43D3D]" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShow(!show)}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-[var(--ink-600)] hover:bg-zinc-100 transition-colors"
+                    >
+                      {show ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
+                  {errors.password ? (
+                    <p className="text-[11px] text-[#C43D3D]">{errors.password[0]}</p>
+                  ) : (
+                    <p className="text-[11px] text-[var(--ink-600)]">{initial ? "Leave blank to keep current" : "Min. 8 characters"}</p>
+                  )}
+                </div>
 
-            <div className="space-y-1.5 min-w-0">
-              <Label className="text-xs font-medium">Status</Label>
-              <Select value={form.status} onValueChange={(v) => handleChange("status", v)}>
-                <SelectTrigger className="h-10 w-full"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="expired">Expired</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.status && <p className="text-[11px] text-[#C43D3D]">{errors.status[0]}</p>}
+                <div className="space-y-1">
+                  <Label htmlFor="password_confirmation" className="text-[13px] font-medium text-[var(--ink-900)]">
+                    Confirm {!initial && <span className="text-[#C43D3D]">*</span>}
+                  </Label>
+                  <Input
+                    id="password_confirmation"
+                    type={show ? "text" : "password"}
+                    value={form.password_confirmation}
+                    onChange={(e) => handleChange("password_confirmation", e.target.value)}
+                    placeholder="••••••••"
+                    className={`h-11 rounded-lg border-[var(--ink-300)] bg-white focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[14px] ${errors.password_confirmation ? "border-[#C43D3D]" : ""}`}
+                  />
+                  {errors.password_confirmation && <p className="text-[11px] text-[#C43D3D]">{errors.password_confirmation[0]}</p>}
+                </div>
+              </div>
             </div>
+          )}
+
+          <div className="flex justify-end gap-2.5 pt-2">
+            {step > 1 && (
+              <Button type="button" variant="outline" onClick={handleBack} className="h-11 w-32 rounded-lg border-[var(--ink-300)] bg-white hover:bg-zinc-50 text-[14px] font-medium">
+                <ArrowLeft className="size-3.5" /> Back
+              </Button>
+            )}
+            {step < 3 ? (
+              <Button type="button" onClick={handleNext} className="h-11 w-32 rounded-lg bg-[var(--charge-500)] hover:bg-[var(--charge-600)] text-white font-semibold text-[14px] shadow-sm">
+                Continue <ArrowRight className="size-3.5" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 w-32 rounded-lg bg-[var(--charge-500)] hover:bg-[var(--charge-600)] text-white font-semibold text-[14px] shadow-sm"
+              >
+                {loading ? "Saving..." : initial ? "Update member" : "Create member"}
+              </Button>
+            )}
           </div>
-
-          <DialogFooter className="gap-2 sm:gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="min-h-11 cursor-pointer flex-1 sm:flex-none">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="min-h-11 cursor-pointer bg-[var(--charge-500)] hover:bg-[var(--charge-600)] flex-1 sm:flex-none min-w-[132px]"
-            >
-              {loading ? "Saving..." : initial ? "Update member" : "Create member"}
-            </Button>
-          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
+
 
 export default function MembersIndex() {
   const [members, setMembers] = useState([])
@@ -734,7 +915,7 @@ export default function MembersIndex() {
       <MemberForm open={editOpen} onOpenChange={setEditOpen} onSubmit={handleUpdate} initial={selected} loading={saving} />
 
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-[520px] bg-white p-0 gap-0 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[520px] bg-white p-0 gap-0 max-h-[90vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)]">
           <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-[var(--ink-300)]">
             <DialogHeader className="text-left">
               <DialogTitle className="font-display flex items-center gap-3">
@@ -826,7 +1007,7 @@ export default function MembersIndex() {
       </Dialog>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-white">
+        <DialogContent className="sm:max-w-[400px] bg-white max-h-[90vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-[#C43D3D]">
               <Trash2 className="size-5" /> Delete member?

@@ -50,7 +50,7 @@ class Attendance extends Model
 
     public function scopeToday($query)
     {
-        return $query->where('attendance_date', today());
+        return $query->where('attendance_date', \Illuminate\Support\Carbon::today('Asia/Manila')->toDateString());
     }
 
     public function scopeDate($query, ?string $date)

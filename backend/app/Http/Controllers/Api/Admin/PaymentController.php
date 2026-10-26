@@ -3,9 +3,16 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StorePaymentRequest;
+use App\Models\Member;
+use App\Models\Membership;
+use App\Models\MembershipRequest;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
@@ -138,5 +145,96 @@ class PaymentController extends Controller
                 ] : null,
             ],
         ]);
+    }
+
+    public function store(StorePaymentRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        return DB::transaction(function () use ($data, $request) {
+            $userId = $data['user_id'];
+            $membership = null;
+            $membershipRequest = null;
+
+            if (!empty($data['membership_id'])) {
+                $membership = Membership::with('membershipRequest')->findOrFail($data['membership_id']);
+                if ((int) $membership->user_id !== (int) $userId) {
+                    return response()->json(['message' => 'Membership does not belong to selected user.', 'errors' => ['membership_id' => ['Membership does not belong to selected user.']]], 422);
+                }
+                $membershipRequest = $membership->membershipRequest;
+            } else {
+                $receiptPath = 'receipts/admin-placeholder.jpg';
+                if ($request->hasFile('receipt')) {
+                    $receiptPath = $request->file('receipt')->store('receipts', 'public');
+                } else {
+                    if (!Storage::disk('public')->exists('receipts/admin-placeholder.jpg')) {
+                        Storage::disk('public')->put('receipts/admin-placeholder.jpg', '');
+                    }
+                }
+
+                $membershipRequest = MembershipRequest::create([
+                    'user_id' => $userId,
+                    'plan_type' => $data['plan_type'],
+                    'amount' => $data['amount'],
+                    'reference_number' => $data['reference_number'],
+                    'receipt_path' => $receiptPath,
+                    'status' => 'approved',
+                    'admin_note' => 'Auto-approved via admin payment creation',
+                ]);
+
+                $start = Carbon::today('Asia/Manila');
+                $end = match ($membershipRequest->plan_type) {
+                    'daily' => $start->copy()->addDay(),
+                    'monthly' => $start->copy()->addMonth(),
+                    'yearly' => $start->copy()->addYear(),
+                    default => $start->copy()->addMonth(),
+                };
+
+                $membership = Membership::create([
+                    'user_id' => $userId,
+                    'membership_request_id' => $membershipRequest->id,
+                    'start_date' => $start->toDateString(),
+                    'end_date' => $end->toDateString(),
+                    'status' => 'active',
+                ]);
+
+                $member = Member::where('user_id', $userId)->first();
+                if ($member) {
+                    $member->update(['status' => 'active']);
+                }
+            }
+
+            $payment = Payment::create([
+                'user_id' => $userId,
+                'membership_id' => $membership->id,
+                'amount' => $data['amount'],
+            ]);
+
+            $payment->load(['user', 'membership.membershipRequest']);
+
+            return response()->json([
+                'message' => 'Payment created successfully. Membership and request linked (approved).',
+                'data' => [
+                    'id' => $payment->id,
+                    'user_id' => $payment->user_id,
+                    'membership_id' => $payment->membership_id,
+                    'amount' => $payment->amount,
+                    'created_at' => $payment->created_at?->toISOString(),
+                    'membership' => $payment->membership ? [
+                        'id' => $payment->membership->id,
+                        'membership_request_id' => $payment->membership->membership_request_id,
+                        'start_date' => $payment->membership->start_date?->format('Y-m-d'),
+                        'end_date' => $payment->membership->end_date?->format('Y-m-d'),
+                        'status' => $payment->membership->status,
+                    ] : null,
+                    'request' => $payment->membership?->membershipRequest ? [
+                        'id' => $payment->membership->membershipRequest->id,
+                        'plan_type' => $payment->membership->membershipRequest->plan_type,
+                        'reference_number' => $payment->membership->membershipRequest->reference_number,
+                        'status' => $payment->membership->membershipRequest->status,
+                    ] : null,
+                ],
+            ], 201);
+        });
     }
 }

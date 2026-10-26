@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react"
+﻿import { useEffect, useState, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -175,7 +175,7 @@ export default function MembershipRequestsIndex() {
                         <TableCell><StatusBadge status={r.status} /></TableCell>
                         <TableCell className="text-xs text-[var(--ink-600)]">{new Date(r.created_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <Button size="sm" variant="ghost" className="min-h-9 cursor-pointer gap-1" onClick={() => navigate(`/admin/membership-requests/${r.id}`)}>
+                          <Button size="sm" variant="ghost" className="min-h-11 cursor-pointer gap-1" onClick={() => navigate(`/admin/membership-requests/${r.id}`)}>
                             <Eye className="size-3.5" /> View
                           </Button>
                         </TableCell>

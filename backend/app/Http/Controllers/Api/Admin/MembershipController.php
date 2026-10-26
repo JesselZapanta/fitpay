@@ -14,6 +14,10 @@ class MembershipController extends Controller
     {
         $query = Membership::with(['user', 'membershipRequest'])->latest();
 
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {

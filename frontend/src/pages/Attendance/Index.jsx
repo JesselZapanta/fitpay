@@ -253,7 +253,7 @@ export default function AdminAttendance() {
                     onChange={(e) => { setMemberSearch(e.target.value); setShowDropdown(true) }}
                     onFocus={() => setShowDropdown(true)}
                     placeholder="Search member — name, MEM-0001, phone…"
-                    className="pl-9 h-12 pr-9 text-[15px] rounded-xl border-[var(--ink-300)] focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20"
+                    className="pl-9 h-11 pr-9 text-[15px] rounded-xl border-[var(--ink-300)] focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2">
                     <Badge variant="outline" className="rounded-full text-[10px] px-2 py-0.5 border-[var(--ink-300)] bg-white">tap to pick</Badge>

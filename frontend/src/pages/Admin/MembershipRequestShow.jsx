@@ -282,7 +282,7 @@ export default function MembershipRequestShow() {
       </div>
 
       <Dialog open={actionOpen} onOpenChange={setActionOpen}>
-        <DialogContent className="sm:max-w-[380px]">
+        <DialogContent className="sm:max-w-[380px] max-h-[90vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)]">
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
               {actionType === "approved" ? <CheckCircle2 className="size-5 text-[#1E8E5A]" /> : <XCircle className="size-5 text-[#C43D3D]" />}

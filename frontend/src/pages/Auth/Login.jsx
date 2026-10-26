@@ -87,7 +87,7 @@ export default function Login() {
                 placeholder="you@fitpay.test"
                 required
                 autoComplete="email"
-                className="h-12 rounded-lg border-[var(--ink-300)] bg-white focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[15px]"
+                className="h-11 rounded-lg border-[var(--ink-300)] bg-white focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[15px]"
               />
             </div>
 
@@ -102,7 +102,7 @@ export default function Login() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="h-12 rounded-lg border-[var(--ink-300)] bg-white pr-11 focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[15px]"
+                  className="h-11 rounded-lg border-[var(--ink-300)] bg-white pr-11 focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20 text-[15px]"
                 />
                 <button
                   type="button"
@@ -114,7 +114,7 @@ export default function Login() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full h-12 rounded-lg bg-[var(--charge-500)] hover:bg-[var(--charge-600)] text-white font-semibold text-[15px] shadow-sm min-h-12">
+            <Button type="submit" disabled={loading} className="w-full h-11 rounded-lg bg-[var(--charge-500)] hover:bg-[var(--charge-600)] text-white font-semibold text-[15px] shadow-sm min-h-11">
               {loading ? <><Loader2 className="size-4 animate-spin" /> Signing in...</> : "Sign In"}
             </Button>
           </form>

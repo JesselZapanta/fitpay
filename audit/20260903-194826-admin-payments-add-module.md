@@ -1,0 +1,26 @@
+# Audit: Admin Payments — Add Payment Module (Separate Page, 3-Table Linked)
+
+**Date**: 2026-09-03 19:48:26 +08:00
+**Task**: in admin http://localhost:5173/admin/payments add the add payment module for this system, separate page, select user, select membership, add the membership also and the membership request(approve default) since this 3 table is connected
+
+## Files Changed
+| File | Changes |
+|------|---------|
+| `backend/app/Http/Requests/Admin/StorePaymentRequest.php` | **Created** — validates `user_id` required exists:users, `membership_id` nullable exists:memberships, `plan_type` required_without:membership_id in daily/monthly/yearly, `amount` required numeric min:0 max:999999.99, `reference_number` required string max:100, `receipt` nullable image max 5MB. |
+| `backend/app/Http/Controllers/Api/Admin/PaymentController.php` | Added imports `Member, Membership, MembershipRequest, Carbon, DB, Storage, StorePaymentRequest`. Added `store()` — `DB::transaction`: if `membership_id` provided, load existing `Membership` (verify `user_id` matches, 422 otherwise) + reuse its `membershipRequest`; else create `MembershipRequest` (`user_id, plan_type, amount, reference_number, receipt_path` → `store('receipts','public')` or `receipts/admin-placeholder.jpg` with `Storage::put` if none, `status approved`, `admin_note Auto-approved via admin payment creation`), then `Membership` (`user_id, membership_request_id, start_date today, end_date +1 day/month/year per plan, status active`) + `Member::where user_id → status active`. Then `Payment::create` (`user_id, membership_id, amount`). Returns `201` with `membership` + `request` (approved) + `payment`. |
+| `backend/app/Http/Controllers/Api/Admin/MembershipController.php` | Added `if ($request->filled('user_id')) $query->where('user_id', ...)` to `index` for user-filtered memberships (used by payment create). |
+| `backend/routes/api.php` | Added `POST /payments` → `PaymentController@store` inside `role:admin` group (now `GET /payments`, `POST /payments`, `GET /payments/{payment}`). |
+| `frontend/src/pages/Admin/Payments/Create.jsx` | **Created** — separate page `/admin/payments/create` (AdminLayout, max-w 720, stepper 3: User(Member) → Membership(ShieldCheck) → Payment(CreditCard) matching Register/Members wizard). **Step 1 User**: searchable `GET /members?search&per_page=10` list (member_code, name, email, user#), `selectedUser` card, `Check` selected. **Step 2 Membership**: toggle `Create new` (default) vs `Use existing` (fetches `GET /memberships?user_id`); existing shows `#{id} plan_label status start→end`, selected highlighted; create shows `Will create: membership_requests(approved)→memberships(active)→payments` + `plan_type` Select `daily/monthly/yearly` (auto amount 25/300/2000). **Step 3 Payment**: `amount` (DollarSign icon) `h-11`, `reference_number` `h-11`, `receipt` file `h-11` + preview `max-h-32`, summary card (User, Membership mode, Payment amount/reference). All inputs `h-11 rounded-lg text-[14px]` large, buttons `h-11 w-32 rounded-lg` right-aligned `justify-end` (Back outline vs Continue/Create `charge-500`), stepper `size-7` circles + `h-0.5` connectors + `h-1` bars, thin styled scrollbar `max-h-[min(88vh,720px)]` + `[scrollbar-width:thin]`. Validation per step, `FormData` (`multipart/form-data`) submit `POST /payments`, toast + navigate `/admin/payments`. |
+| `frontend/src/pages/Admin/Payments.jsx` | Added `useNavigate`, `Plus`, `AlertCircle` imports, `navigate` const, header now `flex gap-2` with `Total on page` card + `Add payment` `h-11 bg-[var(--charge-500)]` `Plus` button → `/admin/payments/create` (large consistent). |
+| `frontend/src/App.jsx` | Added `import AdminPaymentCreate` and route `path="/admin/payments/create"` → `AdminPaymentCreate` (admin protected) before `/admin/payments` list. |
+| `audit/20260903-194826-admin-payments-add-module.md` | This audit log |
+| `audit/README.md` | Re-indexed newest-first |
+
+## Summary
+Built **separate Add Payment page** at `/admin/payments/create` that links 3 tables: selecting a **User** (via `/members` search), optionally **existing Membership** (via `/memberships?user_id`) or **creating new** (`plan_type` → auto amount), then entering **Payment** (`amount, reference_number, receipt`). Backend `POST /payments` atomically creates `membership_requests` (approved, receipt stored or placeholder) → `memberships` (active, start today, end +plan) → `payments` (linked), updating `members.status` to active. Existing membership mode just creates `payments` linked to chosen `membership_id`. List page now has prominent `Add payment` `h-11` CTA. Build verified `vite build` ✓ 2215 modules.
+
+## Notes
+- Placeholder receipt `receipts/admin-placeholder.jpg` is auto-created empty if no upload; consider adding real default image or making `receipt_path` nullable via migration if preferred.
+- Amount auto-fills from plan (25/300/2000) but remains editable; backend uses payment `amount` for `Payment` and also for `MembershipRequest` amount when creating.
+- Membership `status` always `active`, `request` `approved` (“Auto-approved via admin payment creation”) to satisfy “approve default”.
+- If `membership_id` provided, verify ownership (422 if mismatch) — prevents cross-user linking.

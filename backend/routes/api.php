@@ -44,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/memberships/{membership}', [MembershipController::class, 'show']);
         Route::put('/memberships/{membership}', [MembershipController::class, 'update']);
         Route::get('/payments', [PaymentController::class, 'index']);
+        Route::post('/payments', [PaymentController::class, 'store']);
         Route::get('/payments/{payment}', [PaymentController::class, 'show']);
         Route::get('/attendances', [AdminAttendanceController::class, 'index']);
         Route::post('/attendances/check-in', [AdminAttendanceController::class, 'checkIn']);

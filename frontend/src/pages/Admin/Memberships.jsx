@@ -310,7 +310,7 @@ export default function AdminMemberships() {
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[440px] bg-white p-0 gap-0 max-h-[92vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[440px] bg-white p-0 gap-0 max-h-[92vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)]">
           <DialogHeader className="px-5 sm:px-6 pt-5 pb-4 border-b border-[var(--ink-300)] text-left">
             <DialogTitle className="font-display flex items-center gap-2 text-base">
               <span className="size-8 rounded-lg bg-[var(--charge-100)] border border-[var(--charge-500)]/15 inline-flex items-center justify-center">

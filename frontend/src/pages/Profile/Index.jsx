@@ -252,7 +252,7 @@ function ProfileForm({ role }) {
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/jpg"
                   onChange={onPhotoChange}
-                  className={`h-10 flex-1 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border file:border-[var(--ink-300)] file:bg-[var(--surface-0)] file:text-xs file:font-medium hover:file:bg-white cursor-pointer ${errors.photo ? "border-[#C43D3D]" : ""}`}
+                  className={`h-11 flex-1 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border file:border-[var(--ink-300)] file:bg-[var(--surface-0)] file:text-xs file:font-medium hover:file:bg-white cursor-pointer ${errors.photo ? "border-[#C43D3D]" : ""}`}
                 />
                 {photoFile && (
                   <Button type="button" variant="outline" size="icon" className="size-10 shrink-0 cursor-pointer" onClick={clearPhotoSelection} aria-label="Clear selection">

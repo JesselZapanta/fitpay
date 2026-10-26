@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+﻿import { useState, useRef, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -176,7 +176,7 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
               <div className="text-xs opacity-80">{error}</div>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 rounded-full border-[#FECACA] bg-white hover:bg-white min-h-9 shrink-0">
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 rounded-full border-[#FECACA] bg-white hover:bg-white min-h-11 shrink-0">
             <RefreshCw className="size-3.5" /> Retry
           </Button>
         </CardContent>
@@ -248,7 +248,7 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
           Submitted {data.created_at ? new Date(data.created_at).toLocaleDateString() : "—"}
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
           <div className="rounded-xl border border-[var(--ink-300)] bg-[var(--surface-0)] p-3 sm:p-3.5">
             <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Plan</div>
             <div className="mt-1 font-display font-bold text-[13px] sm:text-sm text-[var(--ink-900)] leading-tight">{data.plan_label}</div>
@@ -266,21 +266,28 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
             </div>
             <div className="text-[11px] text-[var(--ink-600)]">Transaction ID</div>
           </div>
-          <div className="rounded-xl border border-[var(--ink-300)] bg-white p-3 sm:p-3.5 hidden lg:block">
+          <div className="rounded-xl border border-[var(--ink-300)] bg-white p-3 sm:p-3.5">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)] flex items-center gap-1"><CalendarDays className="size-3" /> Start</div>
+            <div className="mt-1 font-medium text-[13px] sm:text-sm text-[var(--ink-900)]">
+              {currentPlan?.start_date ? new Date(currentPlan.start_date).toLocaleDateString() : "—"}
+            </div>
+            <div className="text-[11px] text-[var(--ink-600)]">Start date</div>
+          </div>
+          <div className="rounded-xl border border-[var(--ink-300)] bg-white p-3 sm:p-3.5">
+            <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)] flex items-center gap-1"><CalendarCheck className="size-3" /> Expires</div>
+            <div className="mt-1 font-medium text-[13px] sm:text-sm text-[var(--ink-900)]">
+              {currentPlan?.expires_date || currentPlan?.expires_at ? new Date(currentPlan.expires_date || currentPlan.expires_at).toLocaleDateString() : "—"}
+            </div>
+            <div className="text-[11px] text-[var(--ink-600)]">
+              {currentPlan?.expires_date || currentPlan?.expires_at ? `Exp date · ${currentPlan?.days_left ?? "—"} days left` : "Expiration"}
+            </div>
+          </div>
+          <div className="rounded-xl border border-[var(--ink-300)] bg-white p-3 sm:p-3.5">
             <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Submitted</div>
             <div className="mt-1 font-medium text-[13px] sm:text-sm text-[var(--ink-900)]">
               {data.created_at ? new Date(data.created_at).toLocaleDateString() : "—"}
             </div>
             <div className="text-[11px] text-[var(--ink-600)]">
-              {data.created_at ? new Date(data.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
-            </div>
-          </div>
-          <div className="rounded-xl border border-[var(--ink-300)] bg-white p-3 sm:p-3.5 lg:hidden">
-            <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Submitted</div>
-            <div className="mt-1 font-medium text-[13px] text-[var(--ink-900)]">
-              {data.created_at ? new Date(data.created_at).toLocaleDateString() : "—"}
-            </div>
-            <div className="text-[11px] text-[var(--ink-600)] truncate">
               {data.created_at ? new Date(data.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
             </div>
           </div>
@@ -320,7 +327,7 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
           <Button
             onClick={onTryAgain}
             size="sm"
-            className="rounded-full bg-[var(--ink-900)] hover:bg-black text-white gap-1.5 min-h-9 shrink-0 w-full sm:w-auto"
+            className="rounded-full bg-[var(--ink-900)] hover:bg-black text-white gap-1.5 min-h-11 shrink-0 w-full sm:w-auto"
           >
             Try again <ArrowRight className="size-3.5" />
           </Button>
@@ -331,7 +338,7 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
           <Button
             onClick={onTryAgain}
             size="sm"
-            className="rounded-full bg-[#C43D3D] hover:bg-[#A33232] text-white gap-1.5 min-h-9 shrink-0 w-full sm:w-auto"
+            className="rounded-full bg-[#C43D3D] hover:bg-[#A33232] text-white gap-1.5 min-h-11 shrink-0 w-full sm:w-auto"
           >
             Renew now <ArrowRight className="size-3.5" />
           </Button>
@@ -345,7 +352,7 @@ function PaymentQRDialog({ open, onOpenChange, plan, onSubmit }) {
   const [copied, setCopied] = useState(false)
   if (!plan) return null
 
-  const paymentData = `FITPAY|${plan.id.toUpperCase()}|${plan.amount}|${Date.now()}`
+  const paymentData = "00020101021127830012com.p2pqrpay0111GXCHPHM2XXX02089996440303152170200000006560417DWQM4TK3JDO66TLWS5204601653036085802PH5911E** CA*L A.6006Maloro610412346304E8B3"
   const gcashNumber = "09123456789"
 
   const handleCopy = () => {
@@ -357,7 +364,7 @@ function PaymentQRDialog({ open, onOpenChange, plan, onSubmit }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[380px] p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="sm:max-w-[380px] p-0 gap-0 max-h-[min(88vh,640px)] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)] rounded-2xl">
         <div className={`bg-gradient-to-br ${plan.gradient} px-6 py-5 text-white text-center`}>
           <DialogTitle className="text-lg font-display font-bold text-white">{plan.name}</DialogTitle>
           <DialogDescription className="text-white/80 text-xs mt-1">Scan the QR code to pay</DialogDescription>
@@ -492,7 +499,7 @@ function PaymentSubmitDialog({ open, onOpenChange, plan, onSuccess }) {
   if (submitted) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[380px] p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogContent className="sm:max-w-[380px] p-0 gap-0 max-h-[min(88vh,640px)] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)] rounded-2xl">
           <div className={`bg-gradient-to-br ${plan.gradient} px-6 py-5 text-white text-center`}>
             <DialogTitle className="text-lg font-display font-bold text-white">Payment Submitted</DialogTitle>
           </div>
@@ -533,7 +540,7 @@ function PaymentSubmitDialog({ open, onOpenChange, plan, onSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[380px] p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="sm:max-w-[380px] p-0 gap-0 max-h-[min(88vh,640px)] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--ink-300)_transparent] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--ink-300)] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[var(--ink-600)] rounded-2xl">
         <div className={`bg-gradient-to-br ${plan.gradient} px-6 py-5 text-white text-center`}>
           <DialogTitle className="text-lg font-display font-bold text-white">Submit Payment</DialogTitle>
           <DialogDescription className="text-white/80 text-xs mt-1">Upload your receipt for {plan.name}</DialogDescription>

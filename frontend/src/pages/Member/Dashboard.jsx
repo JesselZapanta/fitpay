@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -276,7 +276,7 @@ export default function MemberDashboard() {
                           ? "No active membership"
                           : "Your membership is active — check expiry below."}
                   </p>
-                  <Button asChild size="sm" className="rounded-full bg-[var(--ink-900)] hover:bg-black text-white gap-1.5 min-h-9 shrink-0 w-full sm:w-auto">
+                  <Button asChild size="sm" className="rounded-full bg-[var(--ink-900)] hover:bg-black text-white gap-1.5 min-h-11 shrink-0 w-full sm:w-auto">
                     <Link to="/member/membership">
                       <Crown className="size-4" /> View Membership
                     </Link>

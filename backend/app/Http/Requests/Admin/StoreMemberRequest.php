@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class StoreMemberRequest extends FormRequest
 {
@@ -17,6 +18,7 @@ class StoreMemberRequest extends FormRequest
             'user_id' => ['nullable', 'exists:users,id'],
             'name' => ['required_without:user_id', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required_without:user_id', 'nullable', 'string', 'confirmed', Password::min(8)],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'birthdate' => ['nullable', 'date', 'before:today'],

@@ -1,0 +1,168 @@
+// FitPay — DBML for dbdiagram.io (paste at https://dbdiagram.io/d)
+// Generated 2026-09-08 from Laravel migrations
+// DB: MySQL 8, Timezone: Asia/Manila
+
+Table users {
+  id bigint [pk, increment]
+  name varchar(255) [not null]
+  email varchar(255) [unique, not null]
+  email_verified_at timestamp [null]
+  password varchar(255) [not null]
+  role enum [not null, default: 'member', note: 'admin | member']
+  status enum [not null, default: 'active', note: 'active | inactive']
+  photo varchar(255) [null, note: 'storage/photos/...']
+  remember_token varchar(100) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table members {
+  id bigint [pk, increment]
+  member_code varchar(255) [unique, not null, note: 'MEM-0001']
+  user_id bigint [not null, ref: > users.id]
+  phone varchar(255) [null]
+  address varchar(255) [null]
+  birthdate date [null]
+  gender enum [null, note: 'male | female | other']
+  status enum [not null, default: 'active', note: 'active | inactive | expired']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    member_code [type: index]
+    status [type: index]
+  }
+}
+
+Table membership_requests {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  plan_type enum [not null, note: 'daily=₱25 monthly=₱300 yearly=₱2000']
+  amount decimal(10,2) [not null]
+  reference_number varchar(255) [not null]
+  receipt_path varchar(255) [not null, note: 'storage/app/public/receipts/...']
+  status enum [not null, default: 'pending', note: 'pending | approved | rejected']
+  admin_note text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    status [type: index]
+    plan_type [type: index]
+  }
+}
+
+Table memberships {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  membership_request_id bigint [not null, ref: > membership_requests.id]
+  start_date date [not null, note: 'Asia/Manila today on approval']
+  end_date date [not null, note: 'daily+1d monthly+1m yearly+1y']
+  status enum [not null, default: 'active', note: 'active | expired']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    status [type: index]
+    (user_id, status) [type: index]
+    end_date [type: index]
+  }
+}
+
+Table payments {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  membership_id bigint [not null, ref: > memberships.id]
+  amount decimal(10,2) [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    user_id [type: index]
+    membership_id [type: index]
+  }
+}
+
+Table attendances {
+  id bigint [pk, increment]
+  member_id bigint [not null, ref: > members.id]
+  user_id bigint [null, ref: > users.id]
+  attendance_date date [not null, note: 'Asia/Manila Y-m-d, unique per member per day']
+  check_in time [null, note: 'Asia/Manila H:i:s']
+  check_out time [null, note: 'Asia/Manila H:i:s']
+  remarks text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (member_id, attendance_date) [unique]
+    attendance_date [type: index]
+    user_id [type: index]
+  }
+}
+
+// Framework tables (Laravel)
+Table password_reset_tokens {
+  email varchar(255) [pk]
+  token varchar(255) [not null]
+  created_at timestamp [null]
+}
+Table sessions {
+  id varchar(255) [pk]
+  user_id bigint [null, ref: > users.id]
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  payload longtext [not null]
+  last_activity int [not null]
+}
+Table cache {
+  key varchar(255) [pk]
+  value mediumtext [not null]
+  expiration int [not null]
+}
+Table cache_locks {
+  key varchar(255) [pk]
+  owner varchar(255) [not null]
+  expiration int [not null]
+}
+Table jobs {
+  id bigint [pk, increment]
+  queue varchar(255) [not null]
+  payload longtext [not null]
+  attempts tinyint [not null]
+  reserved_at int [null]
+  available_at int [not null]
+  created_at int [not null]
+}
+Table job_batches {
+  id varchar(255) [pk]
+  name varchar(255) [not null]
+  total_jobs int [not null]
+  pending_jobs int [not null]
+  failed_jobs int [not null]
+  failed_job_ids longtext [not null]
+  options mediumtext [null]
+  cancelled_at int [null]
+  created_at int [not null]
+  finished_at int [null]
+}
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [unique]
+  connection text [not null]
+  queue text [not null]
+  payload longtext [not null]
+  exception longtext [not null]
+  failed_at timestamp [not null]
+}
+
+// Relationships (dbdiagram will auto-draw via ref: >)
+Ref: members.user_id > users.id [delete: cascade]
+Ref: membership_requests.user_id > users.id [delete: cascade]
+Ref: memberships.user_id > users.id [delete: cascade]
+Ref: memberships.membership_request_id > membership_requests.id [delete: cascade]
+Ref: payments.user_id > users.id [delete: cascade]
+Ref: payments.membership_id > memberships.id [delete: cascade]
+Ref: attendances.member_id > members.id [delete: cascade]
+Ref: attendances.user_id > users.id [delete: cascade]
+Ref: sessions.user_id > users.id

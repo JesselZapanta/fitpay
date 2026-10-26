@@ -11,6 +11,7 @@ import AdminMembershipRequests from "@/pages/Admin/MembershipRequests"
 import AdminMembershipRequestShow from "@/pages/Admin/MembershipRequestShow"
 import AdminMemberships from "@/pages/Admin/Memberships"
 import AdminPayments from "@/pages/Admin/Payments"
+import AdminPaymentCreate from "@/pages/Admin/Payments/Create"
 import AdminAttendance from "@/pages/Admin/Attendance"
 import AdminReports from "@/pages/Admin/Reports"
 import MemberAttendance from "@/pages/Member/Attendance"
@@ -157,6 +158,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["admin"]}>
                 <AdminPayments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments/create"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminPaymentCreate />
               </ProtectedRoute>
             }
           />

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Member;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -17,18 +19,34 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:500'],
+            'birthdate' => ['required', 'date', 'before:today'],
+            'gender' => ['required', 'in:male,female,other'],
         ]);
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'member',
-        ]);
+        return DB::transaction(function () use ($data) {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'member',
+            ]);
 
-        $token = auth('api')->login($user);
+            Member::create([
+                'user_id' => $user->id,
+                'phone' => $data['phone'],
+                'address' => $data['address'],
+                'birthdate' => $data['birthdate'],
+                'gender' => $data['gender'],
+                'status' => 'active',
+            ]);
 
-        return $this->respondWithToken($token, $user, 201);
+            $token = auth('api')->login($user);
+            $user->load('members');
+
+            return $this->respondWithToken($token, $user, 201);
+        });
     }
 
     public function login(Request $request): JsonResponse

@@ -24,8 +24,10 @@ class DashboardController extends Controller
         $inactiveMembers = Member::where('status', 'inactive')->count();
 
         // Memberships
+        $manilaToday = Carbon::today('Asia/Manila')->toDateString();
+        $manilaNow = Carbon::now('Asia/Manila');
         $totalMemberships = Membership::count();
-        $activeMemberships = Membership::where('status', 'active')->where('end_date', '>=', today())->count();
+        $activeMemberships = Membership::where('status', 'active')->where('end_date', '>=', $manilaToday)->count();
         $expiredMemberships = $totalMemberships - $activeMemberships;
         $membershipsByPlan = Membership::with('membershipRequest')
             ->get()
@@ -35,8 +37,8 @@ class DashboardController extends Controller
         // Payments
         $totalPayments = Payment::count();
         $totalRevenue = Payment::sum('amount');
-        $paymentsLast6Months = collect(range(5, 0))->map(function ($i) {
-            $month = now()->copy()->subMonths($i);
+        $paymentsLast6Months = collect(range(5, 0))->map(function ($i) use ($manilaNow) {
+            $month = $manilaNow->copy()->subMonths($i);
             $sum = Payment::whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)->sum('amount');
             return [
                 'month' => $month->format('M'),
@@ -47,12 +49,12 @@ class DashboardController extends Controller
         })->values();
 
         // Attendance
-        $today = today()->format('Y-m-d');
+        $today = $manilaToday;
         $todayTotal = Attendance::where('attendance_date', $today)->count();
         $todayPresent = Attendance::where('attendance_date', $today)->whereNotNull('check_in')->whereNull('check_out')->count();
         $todayCompleted = Attendance::where('attendance_date', $today)->whereNotNull('check_in')->whereNotNull('check_out')->count();
-        $attendanceLast7 = collect(range(6, 0))->map(function ($i) {
-            $date = now()->copy()->subDays($i);
+        $attendanceLast7 = collect(range(6, 0))->map(function ($i) use ($manilaNow) {
+            $date = $manilaNow->copy()->subDays($i);
             $count = Attendance::whereDate('attendance_date', $date->format('Y-m-d'))->count();
             return [
                 'date' => $date->format('Y-m-d'),
@@ -93,8 +95,8 @@ class DashboardController extends Controller
                 'member_name' => $a->member?->name ?? $a->user?->name,
                 'member_code' => $a->member?->member_code,
                 'attendance_date' => $a->attendance_date->format('Y-m-d'),
-                'check_in' => $a->check_in ? Carbon::parse($a->check_in)->format('H:i') : null,
-                'check_out' => $a->check_out ? Carbon::parse($a->check_out)->format('H:i') : null,
+                'check_in' => $a->check_in ? Carbon::parse($a->check_in)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_out' => $a->check_out ? Carbon::parse($a->check_out)->timezone('Asia/Manila')->format('H:i') : null,
                 'status' => $a->check_in && !$a->check_out ? 'present' : ($a->check_in && $a->check_out ? 'completed' : 'unknown'),
             ];
         });
@@ -134,8 +136,8 @@ class DashboardController extends Controller
                     'recent_attendances' => $recentAttendances,
                 ],
                 'recent' => [
-                    ['id' => 1, 'title' => $totalMembers . ' total members', 'time' => now()->format('M d')],
-                    ['id' => 2, 'title' => '₱' . number_format($totalRevenue, 2) . ' total revenue', 'time' => now()->format('M d')],
+                    ['id' => 1, 'title' => $totalMembers . ' total members', 'time' => $manilaNow->format('M d')],
+                    ['id' => 2, 'title' => '₱' . number_format($totalRevenue, 2) . ' total revenue', 'time' => $manilaNow->format('M d')],
                 ],
                 'user' => [
                     'id' => $user->id,

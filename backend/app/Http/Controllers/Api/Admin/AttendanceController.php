@@ -13,10 +13,11 @@ class AttendanceController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $manilaTodayForQuery = Carbon::today('Asia/Manila')->toDateString();
         $query = Attendance::with(['member.user', 'user'])
-            ->whereHas('member', function ($q) {
-                $q->whereHas('user.memberships', function ($mq) {
-                    $mq->where('status', 'active')->where('end_date', '>=', today());
+            ->whereHas('member', function ($q) use ($manilaTodayForQuery) {
+                $q->whereHas('user.memberships', function ($mq) use ($manilaTodayForQuery) {
+                    $mq->where('status', 'active')->where('end_date', '>=', $manilaTodayForQuery);
                 });
             })
             ->latest('attendance_date')->latest('check_in');
@@ -53,10 +54,10 @@ class AttendanceController extends Controller
                 'member_id' => $a->member_id,
                 'user_id' => $a->user_id,
                 'attendance_date' => $a->attendance_date?->format('Y-m-d'),
-                'check_in' => $a->check_in ? Carbon::parse($a->check_in)->format('H:i') : null,
-                'check_in_full' => $a->check_in ? Carbon::parse($a->check_in)->format('H:i:s') : null,
-                'check_out' => $a->check_out ? Carbon::parse($a->check_out)->format('H:i') : null,
-                'check_out_full' => $a->check_out ? Carbon::parse($a->check_out)->format('H:i:s') : null,
+                'check_in' => $a->check_in ? Carbon::parse($a->check_in)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_in_full' => $a->check_in ? Carbon::parse($a->check_in)->timezone('Asia/Manila')->format('H:i:s') : null,
+                'check_out' => $a->check_out ? Carbon::parse($a->check_out)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_out_full' => $a->check_out ? Carbon::parse($a->check_out)->timezone('Asia/Manila')->format('H:i:s') : null,
                 'remarks' => $a->remarks,
                 'status' => $a->check_in && !$a->check_out ? 'present' : ($a->check_in && $a->check_out ? 'completed' : 'unknown'),
                 'created_at' => $a->created_at?->toISOString(),
@@ -81,11 +82,12 @@ class AttendanceController extends Controller
             ];
         });
 
-        $today = today()->format('Y-m-d');
-        $activeScope = function ($q) {
-            $q->whereHas('member', function ($mq) {
-                $mq->whereHas('user.memberships', function ($mmq) {
-                    $mmq->where('status', 'active')->where('end_date', '>=', today());
+        $today = Carbon::today('Asia/Manila')->format('Y-m-d');
+        $manilaToday = Carbon::today('Asia/Manila')->toDateString();
+        $activeScope = function ($q) use ($manilaToday) {
+            $q->whereHas('member', function ($mq) use ($manilaToday) {
+                $mq->whereHas('user.memberships', function ($mmq) use ($manilaToday) {
+                    $mmq->where('status', 'active')->where('end_date', '>=', $manilaToday);
                 });
             });
         };
@@ -127,12 +129,13 @@ class AttendanceController extends Controller
         ]);
 
         $member = Member::with('user')->findOrFail($data['member_id']);
-        $hasActive = \App\Models\Membership::where('user_id', $member->user_id)->where('status', 'active')->where('end_date', '>=', today())->exists();
+        $manilaToday = Carbon::today('Asia/Manila')->toDateString();
+        $hasActive = \App\Models\Membership::where('user_id', $member->user_id)->where('status', 'active')->where('end_date', '>=', $manilaToday)->exists();
         if (!$hasActive) {
             return response()->json(['message' => 'Member does not have an active membership (most current fee).'], 422);
         }
-        $date = $data['attendance_date'] ?? today()->format('Y-m-d');
-        $now = now()->format('H:i:s');
+        $date = $data['attendance_date'] ?? Carbon::today('Asia/Manila')->format('Y-m-d');
+        $now = Carbon::now('Asia/Manila')->format('H:i:s');
 
         $attendance = Attendance::where('member_id', $member->id)->where('attendance_date', $date)->first();
 
@@ -162,8 +165,8 @@ class AttendanceController extends Controller
                 'id' => $attendance->id,
                 'member_id' => $attendance->member_id,
                 'attendance_date' => $attendance->attendance_date?->format('Y-m-d'),
-                'check_in' => $attendance->check_in ? Carbon::parse($attendance->check_in)->format('H:i') : null,
-                'check_out' => $attendance->check_out ? Carbon::parse($attendance->check_out)->format('H:i') : null,
+                'check_in' => $attendance->check_in ? Carbon::parse($attendance->check_in)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_out' => $attendance->check_out ? Carbon::parse($attendance->check_out)->timezone('Asia/Manila')->format('H:i') : null,
                 'status' => 'present',
             ],
         ]);
@@ -177,8 +180,8 @@ class AttendanceController extends Controller
         ]);
 
         $member = Member::findOrFail($data['member_id']);
-        $date = $data['attendance_date'] ?? today()->format('Y-m-d');
-        $now = now()->format('H:i:s');
+        $date = $data['attendance_date'] ?? Carbon::today('Asia/Manila')->format('Y-m-d');
+        $now = Carbon::now('Asia/Manila')->format('H:i:s');
 
         $attendance = Attendance::where('member_id', $member->id)->where('attendance_date', $date)->first();
 
@@ -200,8 +203,8 @@ class AttendanceController extends Controller
                 'id' => $attendance->id,
                 'member_id' => $attendance->member_id,
                 'attendance_date' => $attendance->attendance_date?->format('Y-m-d'),
-                'check_in' => $attendance->check_in ? Carbon::parse($attendance->check_in)->format('H:i') : null,
-                'check_out' => $attendance->check_out ? Carbon::parse($attendance->check_out)->format('H:i') : null,
+                'check_in' => $attendance->check_in ? Carbon::parse($attendance->check_in)->timezone('Asia/Manila')->format('H:i') : null,
+                'check_out' => $attendance->check_out ? Carbon::parse($attendance->check_out)->timezone('Asia/Manila')->format('H:i') : null,
                 'status' => 'completed',
             ],
         ]);

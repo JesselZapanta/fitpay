@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UpdateMemberRequest extends FormRequest
 {
@@ -18,6 +19,7 @@ class UpdateMemberRequest extends FormRequest
             'user_id' => ['nullable', 'exists:users,id'],
             'name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('member')?->user_id)],
+            'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'birthdate' => ['nullable', 'date', 'before:today'],

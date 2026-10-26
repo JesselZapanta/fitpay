@@ -59,7 +59,8 @@ export default function AdminAttendance() {
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0, from: 0, to: 0 })
   const [stats, setStats] = useState({ today_total: 0, today_present: 0, today_completed: 0, today_date: "" })
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10))
+  const getManilaDate = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+  const [filterDate, setFilterDate] = useState(getManilaDate())
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [tab, setTab] = useState("today")
@@ -168,7 +169,7 @@ export default function AdminAttendance() {
     setMemberSearch("")
   }
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
   const isToday = filterDate === todayStr
 
   return (
@@ -253,7 +254,7 @@ export default function AdminAttendance() {
                     onChange={(e) => { setMemberSearch(e.target.value); setShowDropdown(true) }}
                     onFocus={() => setShowDropdown(true)}
                     placeholder="Search active member - name, MEM-0001, phone…"
-                    className="pl-9 h-12 pr-9 text-[15px] rounded-xl border-[var(--ink-300)] focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20"
+                    className="pl-9 h-11 pr-9 text-[15px] rounded-xl border-[var(--ink-300)] focus-visible:border-[var(--charge-500)] focus-visible:ring-[var(--charge-500)]/20"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2">
                     <Badge variant="outline" className="rounded-full text-[10px] px-2 py-0.5 border-[var(--ink-300)] bg-white">tap to pick</Badge>

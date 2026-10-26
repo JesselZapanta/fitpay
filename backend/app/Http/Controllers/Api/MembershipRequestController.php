@@ -157,7 +157,7 @@ class MembershipRequestController extends Controller
             if ($data['status'] === 'approved') {
                 $existing = Membership::where('membership_request_id', $membershipRequest->id)->first();
                 if (!$existing) {
-                    $start = Carbon::today();
+                    $start = Carbon::today('Asia/Manila');
                     $end = match ($membershipRequest->plan_type) {
                         'daily' => $start->copy()->addDay(),
                         'monthly' => $start->copy()->addMonth(),
