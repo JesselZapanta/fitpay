@@ -17,12 +17,12 @@ const planBadge = {
 function StatusBadge({ status }) {
   const map = {
     active: "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20",
-    expired: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20",
+    inactive: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
     approved: "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20",
     pending: "bg-[#FEF3C7] text-[#B45309] border-[#B45309]/20",
     rejected: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20",
   }
-  const icons = { active: CheckCircle2, expired: XCircle, approved: CheckCircle2, pending: Clock, rejected: XCircle }
+  const icons = { active: CheckCircle2, inactive: XCircle, approved: CheckCircle2, pending: Clock, rejected: XCircle }
   const Icon = icons[status] || Clock
   return (
     <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border gap-1 ${map[status] || "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20"}`}>

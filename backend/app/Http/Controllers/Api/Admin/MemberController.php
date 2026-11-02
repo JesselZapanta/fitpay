@@ -20,9 +20,9 @@ class MemberController extends Controller
     {
         $request->validate([
             'search' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', 'in:all,active,inactive,expired'],
+            'status' => ['nullable', 'in:all,active,inactive'],
             'gender' => ['nullable', 'in:all,male,female,other'],
-            'membership' => ['nullable', 'in:all,active,expired'],
+            'membership' => ['nullable', 'in:all,active,inactive'],
             'has_active_membership' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],

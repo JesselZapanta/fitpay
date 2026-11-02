@@ -59,11 +59,11 @@ class ReportController extends Controller
         $attendancesAll = $attendanceQuery->get();
 
         $recentMemberships = Membership::where('user_id', $user->id)->with('membershipRequest')->latest('start_date')->limit(5)->get()->map(function (Membership $m) {
-            $isExpired = $m->end_date->isPast() || $m->status === 'expired';
+            $isInactive = $m->end_date->isPast() || $m->status === 'inactive';
             return [
                 'plan_label' => match ($m->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
                 'period' => $m->start_date->format('Y-m-d') . ' → ' . $m->end_date->format('Y-m-d'),
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isInactive ? 'inactive' : 'active',
                 'amount' => $m->membershipRequest?->amount,
             ];
         });
@@ -90,7 +90,7 @@ class ReportController extends Controller
             'summary' => [
                 'memberships_total' => $membershipsAll->count(),
                 'memberships_active' => $membershipsActive,
-                'memberships_expired' => $membershipsAll->count() - $membershipsActive,
+                'memberships_inactive' => $membershipsAll->count() - $membershipsActive,
                 'payments_total' => $paymentsAll->count(),
                 'payments_revenue' => round($revenue, 2),
                 'attendances_total' => $attendancesAll->count(),
@@ -111,11 +111,11 @@ class ReportController extends Controller
         $active = $all->filter(fn($m) => !$m->end_date->isPast() && $m->status === 'active')->count();
         $paginator = $query->latest('start_date')->paginate(10);
         $data = $paginator->getCollection()->map(function (Membership $m) {
-            $isExpired = $m->end_date->isPast() || $m->status === 'expired';
+            $isInactive = $m->end_date->isPast() || $m->status === 'inactive';
             return [
                 'plan_label' => match ($m->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
                 'period' => $m->start_date->format('Y-m-d') . ' → ' . $m->end_date->format('Y-m-d'),
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isInactive ? 'inactive' : 'active',
                 'amount' => $m->membershipRequest?->amount,
                 'created_at' => $m->created_at->format('Y-m-d'),
             ];
@@ -123,7 +123,7 @@ class ReportController extends Controller
         return response()->json([
             'data' => $data,
             'meta' => ['current_page' => $paginator->currentPage(), 'per_page' => $paginator->perPage(), 'total' => $paginator->total(), 'last_page' => $paginator->lastPage(), 'from' => $paginator->firstItem(), 'to' => $paginator->lastItem()],
-            'summary' => ['total' => $all->count(), 'active' => $active, 'expired' => $all->count() - $active],
+            'summary' => ['total' => $all->count(), 'active' => $active, 'inactive' => $all->count() - $active],
         ]);
     }
 

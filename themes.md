@@ -56,8 +56,8 @@ Apply: `font-display` on numbers/headings, `font-body` on body/buttons. Use `fon
 **Status pills (never large fills)**:
 - Active/Paid: `bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20`
 - Expiring/Pending: `bg-[#FCEFD6] text-[#B8790A]`
-- Expired/Overdue: `bg-[#FBE2E2] text-[#C43D3D]`
-- Neutral: `bg-[#EDEEF0] text-[#5B6168]`
+- Rejected/Overdue: `bg-[#FBE2E2] text-[#C43D3D]`
+- Neutral/Inactive: `bg-[#EDEEF0] text-[#5B6168]`
 
 Focus ring: `2px solid var(--charge-500)` + 2px offset.
 

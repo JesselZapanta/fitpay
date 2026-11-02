@@ -55,7 +55,7 @@ npx shadcn@latest add <component>  # JSX, style new-york, css src/index.css, ico
 - API base from `import.meta.env.VITE_API_URL`, never hardcoded. QR on member side is static unified GCash payload (`0002010102112783...`), not per-plan dynamic.
 
 ## Design Tokens (`src/index.css` / `themes.md`)
-`--charge-500 #0F766E` primary, `--charge-600 #115E59` hover, `--charge-100 #CCFBF1`, `--grow-500 #1E8E5A` success, `--grow-100 #DFF5E9`, `--ink-900 #1A1D1F`, `--ink-600 #5B6168`, `--ink-300 #E1E4E8`, `--surface-0 #F7F7F5` bg, `--surface-1 #FFFFFF` card. Status pills: pending `#B8790A` on `#FEF3C7`/`#FCEFD6`, approved/active `#1E8E5A` on `#DFF5E9`, rejected/expired `#C43D3D` on `#FBE2E2`. Fonts: `Space Grotesk` display/tabuluar-nums, `Inter` body.
+`--charge-500 #0F766E` primary, `--charge-600 #115E59` hover, `--charge-100 #CCFBF1`, `--grow-500 #1E8E5A` success, `--grow-100 #DFF5E9`, `--ink-900 #1A1D1F`, `--ink-600 #5B6168`, `--ink-300 #E1E4E8`, `--surface-0 #F7F7F5` bg, `--surface-1 #FFFFFF` card. Status pills: pending `#B8790A` on `#FEF3C7`/`#FCEFD6`, approved/active `#1E8E5A` on `#DFF5E9`, rejected `#C43D3D` on `#FBE2E2`, inactive `#5B6168` on `#EDEEF0`. Fonts: `Space Grotesk` display/tabuluar-nums, `Inter` body.
 
 ## Testing
 - Pest 3 + `pest-plugin-laravel` (`tests/Pest.php` extends `Tests\TestCase`, `Feature` lacks `RefreshDatabase` by default — add `->use(RefreshDatabase::class)` per-file if needed). `phpunit.xml` forces `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`, `CACHE_STORE=array`, `QUEUE_CONNECTION=sync`, `BCRYPT_ROUNDS=4`. No external services needed. Run single: `php artisan test --filter=TestName` / `./vendor/bin/pest --filter=TestName`.

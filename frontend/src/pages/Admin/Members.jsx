@@ -18,14 +18,12 @@ const statusOptions = [
   { value: "all", label: "All status" },
   { value: "active", label: "Active" },
   { value: "inactive", label: "Inactive" },
-  { value: "expired", label: "Expired" },
 ]
 
 function StatusBadge({ status }) {
   const map = {
     active: "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20",
     inactive: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
-    expired: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20",
   }
   return <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${map[status] || map.inactive}`}>{status}</Badge>
 }
@@ -412,7 +410,6 @@ function MemberForm({ open, onOpenChange, onSubmit, initial, loading }) {
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="expired">Expired</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.status && <p className="text-[11px] text-[#C43D3D]">{errors.status[0]}</p>}

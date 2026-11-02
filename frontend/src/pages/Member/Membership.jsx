@@ -124,17 +124,17 @@ const statusMeta = {
     alertText: "text-[#991B1B]",
     desc: "Request was rejected. Check the admin note above and try again.",
   },
-  expired: {
-    label: "expired",
-    badge: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/15",
-    dot: "bg-[#C43D3D]",
+  inactive: {
+    label: "inactive",
+    badge: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
+    dot: "bg-[#5B6168]",
     icon: XCircle,
-    cardBorder: "border-[#C43D3D]/20",
-    accent: "bg-[#C43D3D]",
-    alertBg: "bg-[#FEF2F2]",
-    alertBorder: "border-[#FECACA]",
-    alertText: "text-[#991B1B]",
-    desc: "Membership expired — renew to stay active.",
+    cardBorder: "border-[#5B6168]/20",
+    accent: "bg-[#5B6168]",
+    alertBg: "bg-[#F7F7F5]",
+    alertBorder: "border-[#E1E4E8]",
+    alertText: "text-[#3F444A]",
+    desc: "Membership inactive — renew to stay active.",
   },
 }
 
@@ -202,10 +202,10 @@ function LatestRequestCard({ data, currentPlan, loading, error, onRetry, onTryAg
 
   const isLinkedExpired = !!currentPlan?.is_expired && String(currentPlan?.request_id) === String(data.id)
   const isAnyExpired = !!currentPlan?.is_expired
-  const effectiveAlertStatus = data.status === "approved" && isLinkedExpired ? "expired" : data.status
+  const effectiveAlertStatus = data.status === "approved" && isLinkedExpired ? "inactive" : data.status
   const meta = statusMeta[data.status] || statusMeta.pending
   const alertMeta = statusMeta[effectiveAlertStatus] || meta
-  const cardMeta = isLinkedExpired ? statusMeta.expired : meta
+  const cardMeta = isLinkedExpired ? statusMeta.inactive : meta
   const StatusIcon = alertMeta.icon
 
   return (

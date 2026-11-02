@@ -629,7 +629,7 @@ Schema::create('members', function (Blueprint $table) {
     $table->date('birthdate')->nullable();
     $table->enum('gender', ['male','female','other'])->nullable();
     $table->string('photo')->nullable();
-    $table->enum('status', ['active','inactive','expired'])->default('active');
+    $table->enum('status', ['active','inactive'])->default('active');
     $table->timestamps();
 });
 
@@ -640,7 +640,7 @@ Schema::create('memberships', function (Blueprint $table) {
     $table->foreignId('membership_plan_id')->constrained()->cascadeOnDelete();
     $table->date('start_date');
     $table->date('end_date');             // = start_date + duration
-    $table->enum('status', ['active','expired','cancelled'])->default('active');
+    $table->enum('status', ['active','inactive'])->default('active');
     $table->timestamps();
 });
 
@@ -672,7 +672,7 @@ Schema::create('attendances', function (Blueprint $table) {
 });
 ```
 
-**Key indexes & constraints to add:** unique `member_code`, composite `member_id + attendance_date` where needed, foreign keys with `cascadeOnDelete` for cleanup, and a scheduled job that marks `memberships` + `members` as `expired` when `end_date < today()`.
+**Key indexes & constraints to add:** unique `member_code`, composite `member_id + attendance_date` where needed, foreign keys with `cascadeOnDelete` for cleanup, and a scheduled job that marks `memberships` + `members` as `inactive` when `end_date < today()`.
 
 ---
 
@@ -748,7 +748,7 @@ Schema::create('attendances', function (Blueprint $table) {
 | Screen | Route (Inertia) | Purpose | Key shadcn/ui components |
 |--------|-----------------|---------|--------------------------|
 | **Login** | `/login` | username + password auth | `Card`, `Input`, `Button`, `Form`, `Alert` |
-| **Dashboard** | `/dashboard` | Summary: total members, active/expired, today's attendance, revenue, recent payments, expiring soon | `Card`, `Badge`, `Table`, `Chart` (recharts), `Skeleton` |
+| **Dashboard** | `/dashboard` | Summary: total members, active/inactive, today's attendance, revenue, recent payments | `Card`, `Badge`, `Table`, `Chart` (recharts), `Skeleton` |
 | **Member Management** | `/members` | List + search, Add / Edit / Delete / View details | `Table` (with `overflow-x-auto` OR card stack on mobile), `Dialog`/`Drawer`, `Input`, `Select`, `Button`, `Badge` |
 | **Membership Management** | `/membership-plans` | Plan list, Add / Edit / Delete / View | `Table`, `Dialog`, `Input`, `Form` |
 | **Payment — Process** | `/payments/create` | Select member → enter amount/method → receipt | `Combobox` (member search), `Input`, `Select`, `Card`, `Button` |
@@ -824,7 +824,7 @@ fitpay/
 - **Member Report** — list filtered by status, join date, membership type
 - **Payment / Financial Report** — revenue by date range, per member, per plan
 - **Attendance Report** — visits by member / date range, check-in/out aggregates
-- **Membership / Expiration Report** — expiring soon, expired, active counts
+- **Membership / Expiration Report** - active, inactive counts
 
 ### Criteria / Filters
 

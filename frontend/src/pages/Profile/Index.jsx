@@ -286,7 +286,7 @@ function ProfileForm({ role }) {
                   <div className="rounded-lg border border-[var(--ink-300)] bg-[var(--surface-0)] p-3">
                     <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)]">Membership status</div>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className={`size-2 rounded-full ${profile.member.status === "active" ? "bg-[#1E8E5A]" : profile.member.status === "expired" ? "bg-[#C43D3D]" : "bg-[#5B6168]"}`} />
+                      <span className={`size-2 rounded-full ${profile.member.status === "active" ? "bg-[#1E8E5A]" : "bg-[#5B6168]"}`} />
                       <span className="text-sm font-semibold capitalize text-[var(--ink-900)]">{profile.member.status}</span>
                     </div>
                   </div>

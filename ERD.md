@@ -41,7 +41,7 @@ erDiagram
         varchar address
         date birthdate
         enum gender "male|female|other"
-        enum status "active|inactive|expired"
+        enum status "active|inactive"
         timestamp created_at
         timestamp updated_at
     }
@@ -63,7 +63,7 @@ erDiagram
         bigint membership_request_id FK
         date start_date "Manila today"
         date end_date "Manila +plan"
-        enum status "active|expired"
+        enum status "active|inactive"
         timestamp created_at
         timestamp updated_at
     }

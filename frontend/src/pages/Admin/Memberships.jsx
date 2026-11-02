@@ -16,7 +16,7 @@ import api from "@/lib/api"
 const statusOptions = [
   { value: "all", label: "All status" },
   { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" },
+  { value: "inactive", label: "Inactive" },
 ]
 
 const planLabels = { daily: "Daily Pass", monthly: "Monthly Plan", yearly: "Yearly Plan" }
@@ -29,9 +29,9 @@ const planBadge = {
 function StatusBadge({ status }) {
   const map = {
     active: "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20",
-    expired: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20",
+    inactive: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
   }
-  const icons = { active: CheckCircle2, expired: XCircle }
+  const icons = { active: CheckCircle2, inactive: XCircle }
   const Icon = icons[status] || Clock
   return (
     <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border gap-1 ${map[status] || map.active}`}>
@@ -75,7 +75,7 @@ export default function AdminMemberships() {
   useEffect(() => { fetchMemberships() }, [fetchMemberships])
 
   const activeCount = memberships.filter((m) => m.status === "active").length
-  const expiredCount = memberships.filter((m) => m.status === "expired").length
+  const inactiveCount = memberships.filter((m) => m.status === "inactive").length
 
   const [editOpen, setEditOpen] = useState(false)
   const [selected, setSelected] = useState(null)
@@ -124,13 +124,13 @@ export default function AdminMemberships() {
                 <p className="text-xs sm:text-sm text-[var(--ink-600)]">
                   Active memberships created from approved payments · <span className="font-semibold text-[var(--charge-500)]">{meta.total}</span> total
                   {meta.total > 0 && (
-                    <span className="hidden sm:inline"> · <span className="text-[#1E8E5A] font-medium">{activeCount} active</span> · <span className="text-[#C43D3D] font-medium">{expiredCount} expired</span></span>
+                    <span className="hidden sm:inline"> · <span className="text-[#1E8E5A] font-medium">{activeCount} active</span> · <span className="text-[#5B6168] font-medium">{inactiveCount} inactive</span></span>
                   )}
                 </p>
               </div>
               <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--ink-600)]">
                 <span className="size-2 rounded-full bg-[#1E8E5A]" /> Active
-                <span className="size-2 rounded-full bg-[#C43D3D] ml-2" /> Expired
+                <span className="size-2 rounded-full bg-[#5B6168] ml-2" /> Inactive
               </div>
             </div>
           </CardContent>
@@ -338,10 +338,10 @@ export default function AdminMemberships() {
                 <SelectTrigger className="h-11 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="expired">Expired</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-[11px] text-[var(--ink-600)]">Active = member can check in. Expired = needs renewal.</p>
+              <p className="text-[11px] text-[var(--ink-600)]">Active = member can check in. Inactive = needs renewal.</p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-3 pt-2">

@@ -23,7 +23,7 @@ class HistoryController extends Controller
             ->map(function (Membership $m) {
                 $req = $m->membershipRequest;
                 $isExpired = $m->end_date ? Carbon::parse($m->end_date)->isPast() : false;
-                $computed = $isExpired ? 'expired' : $m->status;
+                $computed = $isExpired ? 'inactive' : $m->status;
                 return [
                     'id' => $m->id,
                     'request_id' => $m->membership_request_id,

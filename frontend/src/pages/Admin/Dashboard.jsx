@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, ShieldCheck, Dumbbell, Wallet, Clock3, AlertTriangle, CheckCircle2, BarChart3, TrendingUp, CalendarDays, CreditCard, Sun, Moon, Sunset, Clock } from "lucide-react"
+import { Users, ShieldCheck, Dumbbell, Wallet, Clock3, AlertTriangle, BarChart3, TrendingUp, CalendarDays, CreditCard, Sun, Moon, Sunset, Clock } from "lucide-react"
 import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import StatCard from "@/components/StatCard"
 import api from "@/lib/api"
@@ -102,9 +102,8 @@ export default function AdminDashboard() {
    const kpis = data?.kpis || {}
   const graphs = data?.graphs || {}
   const tables = data?.tables || {}
-  const memberDonut = graphs.member_status_donut || { active: 0, expired: 0, inactive: 0 }
+  const memberDonut = graphs.member_status_donut || { active: 0, inactive: 0 }
   const activePct = memberDonut.active || 0
-  const expiredPct = memberDonut.expired || 0
   const inactivePct = memberDonut.inactive || 0
 
   const initials = (user?.name || data?.user?.name || "A").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -166,7 +165,7 @@ export default function AdminDashboard() {
             <CardContent className="p-3 sm:p-4 text-center">
               <div className="text-[11px] font-bold tracking-widest uppercase text-[var(--ink-600)] flex items-center justify-center gap-1"><Users className="size-3" /> Members</div>
               <div className="font-display font-bold text-lg sm:text-xl text-[var(--ink-900)]">{kpis.members?.total ?? 0}</div>
-              <div className="text-[11px] text-[var(--ink-600)]">{kpis.members?.active ?? 0} active · {kpis.members?.expired ?? 0} expired</div>
+              <div className="text-[11px] text-[var(--ink-600)]">{kpis.members?.active ?? 0} active · {kpis.members?.inactive ?? 0} inactive</div>
             </CardContent>
           </Card>
           <Card className="border-[var(--ink-300)] bg-white">
@@ -262,7 +261,7 @@ export default function AdminDashboard() {
               <CardTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
                 <Dumbbell className="size-5 text-[var(--grow-500)]" /> Member status
               </CardTitle>
-              <CardDescription className="text-xs">Donut from report module — Active / Expired / Inactive</CardDescription>
+              <CardDescription className="text-xs">Donut from report module — Active / Inactive</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-center py-2">
@@ -270,7 +269,7 @@ export default function AdminDashboard() {
                   <div
                     className="size-full rounded-full"
                     style={{
-                      background: `conic-gradient(var(--grow-500) 0% ${activePct}%, #B8790A ${activePct}% ${activePct + expiredPct}%, #EDEEF0 ${activePct + expiredPct}% 100%)`,
+                      background: `conic-gradient(var(--grow-500) 0% ${activePct}%, #EDEEF0 ${activePct}% 100%)`,
                     }}
                   />
                   <div className="absolute inset-3 rounded-full bg-white flex flex-col items-center justify-center border border-[var(--ink-300)]">
@@ -279,16 +278,11 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="rounded-lg border border-[#DFF5E9] bg-[#DFF5E9] p-2.5">
                   <div className="mx-auto size-2 rounded-full bg-[var(--grow-500)] mb-1.5" />
                   <div className="text-xs font-semibold text-[var(--grow-500)]">Active</div>
                   <div className="text-[11px] text-[var(--ink-600)]">{activePct}%</div>
-                </div>
-                <div className="rounded-lg border border-[#FCEFD6] bg-[#FCEFD6] p-2.5">
-                  <div className="mx-auto size-2 rounded-full bg-[#B8790A] mb-1.5" />
-                  <div className="text-xs font-semibold text-[#B8790A]">Expired</div>
-                  <div className="text-[11px] text-[var(--ink-600)]">{expiredPct}%</div>
                 </div>
                 <div className="rounded-lg border border-[#EDEEF0] bg-[#EDEEF0] p-2.5">
                   <div className="mx-auto size-2 rounded-full bg-[#5B6168] mb-1.5" />

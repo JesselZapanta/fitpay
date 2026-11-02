@@ -292,7 +292,7 @@ export default function AdminAttendance() {
                             <div className="text-sm font-medium truncate">{m.name} <span className="font-mono text-xs text-[var(--ink-600)]">{m.member_code}</span></div>
                             <div className="text-xs text-[var(--ink-600)] truncate">{m.email || m.phone || "—"}</div>
                           </div>
-                          <Badge variant="outline" className={`rounded-full text-[10px] px-2 py-0.5 border ${m.status === "active" ? "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20" : m.status === "expired" ? "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20" : "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20"}`}>{m.status}</Badge>
+                          <Badge variant="outline" className={`rounded-full text-[10px] px-2 py-0.5 border ${m.status === "active" ? "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20" : "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20"}`}>{m.status}</Badge>
                         </button>
                       ))}
                     </div>

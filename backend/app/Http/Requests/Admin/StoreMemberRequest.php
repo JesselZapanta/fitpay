@@ -24,7 +24,7 @@ class StoreMemberRequest extends FormRequest
             'birthdate' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'in:male,female,other'],
             'photo' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
-            'status' => ['sometimes', 'in:active,inactive,expired'],
+            'status' => ['sometimes', 'in:active,inactive'],
         ];
     }
 

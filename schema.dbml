@@ -24,7 +24,7 @@ Table members {
   address varchar(255) [null]
   birthdate date [null]
   gender enum [null, note: 'male | female | other']
-  status enum [not null, default: 'active', note: 'active | inactive | expired']
+  status enum [not null, default: 'active', note: 'active | inactive']
   created_at timestamp [null]
   updated_at timestamp [null]
 
@@ -58,7 +58,7 @@ Table memberships {
   membership_request_id bigint [not null, ref: > membership_requests.id]
   start_date date [not null, note: 'Asia/Manila today on approval']
   end_date date [not null, note: 'daily+1d monthly+1m yearly+1y']
-  status enum [not null, default: 'active', note: 'active | expired']
+  status enum [not null, default: 'active', note: 'active | inactive']
   created_at timestamp [null]
   updated_at timestamp [null]
 

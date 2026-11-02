@@ -46,16 +46,16 @@ const statusMeta = {
     alertBorder: "border-[#FECACA]",
     alertText: "text-[#991B1B]",
   },
-  expired: {
-    label: "expired",
-    badge: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/15",
-    dot: "bg-[#C43D3D]",
+  inactive: {
+    label: "inactive",
+    badge: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
+    dot: "bg-[#5B6168]",
     icon: XCircle,
-    cardBorder: "border-[#C43D3D]/20",
-    accent: "bg-[#C43D3D]",
-    alertBg: "bg-[#FEF2F2]",
-    alertBorder: "border-[#FECACA]",
-    alertText: "text-[#991B1B]",
+    cardBorder: "border-[#5B6168]/20",
+    accent: "bg-[#5B6168]",
+    alertBg: "bg-[#F7F7F5]",
+    alertBorder: "border-[#E1E4E8]",
+    alertText: "text-[#3F444A]",
   },
 }
 
@@ -169,10 +169,10 @@ export default function MemberDashboard() {
             const req = data.latest_request
             const isLinkedExpired = !!data.current_plan?.is_expired && String(data.current_plan?.request_id) === String(req.id)
             const isAnyExpired = !!data.current_plan?.is_expired
-            const effectiveAlertStatus = req.status === "approved" && isLinkedExpired ? "expired" : req.status
+            const effectiveAlertStatus = req.status === "approved" && isLinkedExpired ? "inactive" : req.status
             const meta = statusMeta[req.status] || statusMeta.pending
             const alertMeta = statusMeta[effectiveAlertStatus] || meta
-            const cardMeta = isLinkedExpired ? statusMeta.expired : meta
+            const cardMeta = isLinkedExpired ? statusMeta.inactive : meta
             const StatusIcon = alertMeta.icon
             return (
               <Card className={`overflow-hidden rounded-2xl bg-white shadow-sm border p-0 gap-0 ${cardMeta.cardBorder}`}>

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BarChart3, Download, Users, ShieldCheck, Clock, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { BarChart3, Download, Users, Clock, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import AdminLayout from "@/components/Layout/Admin/AdminLayout"
 import api from "@/lib/api"
@@ -36,20 +36,18 @@ function getCurrentMonthRange() {
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
   { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" },
-  { value: "no_plan", label: "No plan" },
+  { value: "inactive", label: "Inactive" },
 ]
 
 function StatusPill({ status }) {
   const key = String(status || "").toLowerCase()
   const map = {
     active: "bg-[#DFF5E9] text-[#1E8E5A] border-[#1E8E5A]/20",
-    expired: "bg-[#FBE2E2] text-[#C43D3D] border-[#C43D3D]/20",
-    no_plan: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
+    inactive: "bg-[#EDEEF0] text-[#5B6168] border-[#5B6168]/20",
   }
-  const labels = { active: "Active", expired: "Expired", no_plan: "No plan" }
+  const labels = { active: "Active", inactive: "Inactive" }
   return (
-    <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap ${map[key] || map.no_plan}`}>
+    <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap ${map[key] || map.inactive}`}>
       {labels[key] || status || "—"}
     </Badge>
   )
@@ -85,12 +83,11 @@ function KpiGrid({ summary }) {
   const items = [
     { label: "Members", value: summary.total ?? 0, sub: "Members in report", icon: Users, chip: "bg-[var(--charge-100)] text-[var(--charge-500)]", bar: "bg-[var(--charge-500)]" },
     { label: "Active", value: summary.active ?? 0, sub: "Active memberships", icon: CheckCircle2, chip: "bg-[var(--grow-100)] text-[var(--grow-500)]", bar: "bg-[var(--grow-500)]" },
-    { label: "Expired", value: summary.expired ?? 0, sub: "Expired memberships", icon: Clock, chip: "bg-[#FBE2E2] text-[#C43D3D]", bar: "bg-[#C43D3D]" },
-    { label: "No plan", value: summary.no_plan ?? 0, sub: "Without membership", icon: ShieldCheck, chip: "bg-[#EDEEF0] text-[var(--ink-600)]", bar: "bg-[var(--ink-300)]" },
+    { label: "Inactive", value: summary.inactive ?? 0, sub: "Inactive memberships", icon: Clock, chip: "bg-[#EDEEF0] text-[var(--ink-600)]", bar: "bg-[var(--ink-300)]" },
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {items.map((item) => {
         const Icon = item.icon
         return (
@@ -268,7 +265,6 @@ export default function AdminReports() {
 
       const teal = [15, 118, 110]
       const grow = [30, 142, 90]
-      const amber = [184, 121, 10]
       const ink900 = [26, 29, 31]
       const ink600 = [91, 97, 104]
       const ink300 = [225, 228, 232]
@@ -330,8 +326,7 @@ export default function AdminReports() {
       const cards = [
         { label: "MEMBERS", value: exportSummary.total ?? 0, sub: "Members in report", color: teal },
         { label: "ACTIVE", value: exportSummary.active ?? 0, sub: "Active memberships", color: grow },
-        { label: "EXPIRED", value: exportSummary.expired ?? 0, sub: "Expired memberships", color: amber },
-        { label: "NO PLAN", value: exportSummary.no_plan ?? 0, sub: "Without membership", color: [91, 97, 104] },
+        { label: "INACTIVE", value: exportSummary.inactive ?? 0, sub: "Inactive memberships", color: [91, 97, 104] },
       ]
       const gap = 3
       const cardW = (contentW - gap * (cards.length - 1)) / cards.length
@@ -403,7 +398,7 @@ export default function AdminReports() {
           r.plan_label || "No plan",
           money(r.amount),
           r.reference_number || "—",
-          r.status === "no_plan" ? "No plan" : (r.status || "—"),
+          r.status || "—",
         ]),
         theme: "striped",
         showHead: "everyPage",
@@ -434,9 +429,6 @@ export default function AdminReports() {
             const raw = String(hook.cell.raw || "").toLowerCase()
             if (raw === "active") {
               hook.cell.styles.textColor = grow
-              hook.cell.styles.fontStyle = "bold"
-            } else if (raw === "expired") {
-              hook.cell.styles.textColor = [196, 61, 61]
               hook.cell.styles.fontStyle = "bold"
             } else {
               hook.cell.styles.textColor = ink600

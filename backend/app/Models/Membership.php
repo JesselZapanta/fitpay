@@ -48,8 +48,7 @@ class Membership extends Model
 
     public function getComputedStatusAttribute(): string
     {
-        if ($this->is_expired) return 'expired';
-        return $this->status;
+        return $this->is_expired ? 'inactive' : $this->status;
     }
 
     public function scopeActive($query)
@@ -57,11 +56,17 @@ class Membership extends Model
         return $query->where('status', 'active')->where('end_date', '>=', Carbon::today());
     }
 
-    public function scopeExpired($query)
+    public function scopeInactive($query)
     {
         return $query->where(function ($q) {
-            $q->where('status', 'expired')->orWhere('end_date', '<', Carbon::today());
+            $q->where('status', 'inactive')->orWhere('end_date', '<', Carbon::today());
         });
+    }
+
+    // Backwards-compatible alias
+    public function scopeExpired($query)
+    {
+        return $this->scopeInactive($query);
     }
 
     public function scopeSearch($query, ?string $search)

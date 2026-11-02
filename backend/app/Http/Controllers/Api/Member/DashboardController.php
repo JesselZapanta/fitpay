@@ -35,7 +35,7 @@ class DashboardController extends Controller
             $elapsed = max(0, $now->diffInDays($start, false));
             $progress = $days > 0 ? min(100, max(0, ($elapsed / $days) * 100)) : 0;
             $daysLeft = max(0, $now->diffInDays($expiresAt, false));
-            $isExpired = $expiresAt->isPast() || $membership->status === 'expired';
+            $isExpired = $expiresAt->isPast() || $membership->status === 'inactive';
             if ($isExpired) {
                 $daysLeft = 0;
                 $progress = 100;
@@ -46,7 +46,7 @@ class DashboardController extends Controller
                 'plan_type' => $planType,
                 'plan_label' => $labels[$planType] ?? $planType,
                 'amount' => $req?->amount ?? 0,
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isExpired ? 'inactive' : 'active',
                 'raw_status' => $membership->status,
                 'start_date' => $membership->start_date->format('Y-m-d'),
                 'approved_at' => $start->toISOString(),

@@ -30,9 +30,9 @@ class MembershipController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            if ($request->status === 'expired') {
+            if ($request->status === 'inactive') {
                 $query->where(function ($q) {
-                    $q->where('status', 'expired')->orWhere('end_date', '<', Carbon::today());
+                    $q->where('status', 'inactive')->orWhere('end_date', '<', Carbon::today());
                 });
             } elseif ($request->status === 'active') {
                 $query->where('status', 'active')->where('end_date', '>=', Carbon::today());
@@ -45,7 +45,7 @@ class MembershipController extends Controller
 
         $data = $paginator->getCollection()->map(function (Membership $m) {
             $isExpired = $m->end_date ? Carbon::parse($m->end_date)->isPast() : false;
-            $computedStatus = $isExpired ? 'expired' : $m->status;
+            $computedStatus = $isExpired ? 'inactive' : $m->status;
             return [
                 'id' => $m->id,
                 'user_id' => $m->user_id,
@@ -103,7 +103,7 @@ class MembershipController extends Controller
     public function update(Request $request, Membership $membership): JsonResponse
     {
         $data = $request->validate([
-            'status' => ['required', 'in:active,expired'],
+            'status' => ['required', 'in:active,inactive'],
         ]);
 
         $membership->update([
@@ -113,13 +113,13 @@ class MembershipController extends Controller
         if ($membership->user) {
             $member = \App\Models\Member::where('user_id', $membership->user_id)->first();
             if ($member) {
-                $member->update(['status' => $data['status'] === 'active' ? 'active' : 'expired']);
+                $member->update(['status' => $data['status'] === 'active' ? 'active' : 'inactive']);
             }
         }
 
         $membership->load(['user', 'membershipRequest']);
         $isExpired = $membership->end_date ? Carbon::parse($membership->end_date)->isPast() : false;
-        $computedStatus = $isExpired ? 'expired' : $membership->status;
+        $computedStatus = $isExpired ? 'inactive' : $membership->status;
 
         return response()->json([
             'message' => 'Membership updated.',
@@ -142,7 +142,7 @@ class MembershipController extends Controller
         $membership->load(['user', 'membershipRequest']);
 
         $isExpired = $membership->end_date ? Carbon::parse($membership->end_date)->isPast() : false;
-        $computedStatus = $isExpired ? 'expired' : $membership->status;
+        $computedStatus = $isExpired ? 'inactive' : $membership->status;
 
         return response()->json([
             'data' => [

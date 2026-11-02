@@ -20,7 +20,6 @@ class DashboardController extends Controller
         // Members
         $totalMembers = Member::count();
         $activeMembers = Member::where('status', 'active')->count();
-        $expiredMembers = Member::where('status', 'expired')->count();
         $inactiveMembers = Member::where('status', 'inactive')->count();
 
         // Memberships
@@ -28,7 +27,7 @@ class DashboardController extends Controller
         $manilaNow = Carbon::now('Asia/Manila');
         $totalMemberships = Membership::count();
         $activeMemberships = Membership::where('status', 'active')->where('end_date', '>=', $manilaToday)->count();
-        $expiredMemberships = $totalMemberships - $activeMemberships;
+        $inactiveMemberships = $totalMemberships - $activeMemberships;
         $membershipsByPlan = Membership::with('membershipRequest')
             ->get()
             ->groupBy(fn($m) => $m->membershipRequest?->plan_type ?? 'unknown')
@@ -72,14 +71,14 @@ class DashboardController extends Controller
             'status' => $m->status,
             'created_at' => $m->created_at->format('Y-m-d'),
         ]);
-        $recentMemberships = Membership::with(['user', 'membershipRequest'])->latest('start_date')->limit(5)->get()->map(function (Membership $m) {
-            $isExpired = $m->end_date->isPast() || $m->status === 'expired';
+        $recentMemberships = Membership::with(['user', 'membershipRequest'])->latest('start_date')->limit(5)->get()->map(function (Membership $m) use ($manilaToday) {
+            $isInactive = $m->end_date->format('Y-m-d') < $manilaToday || $m->status === 'inactive';
             return [
                 'id' => $m->id,
                 'user_name' => $m->user?->name,
                 'plan_label' => match ($m->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
                 'period' => $m->start_date->format('Y-m-d') . ' → ' . $m->end_date->format('Y-m-d'),
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isInactive ? 'inactive' : 'active',
             ];
         });
         $recentPayments = Payment::with(['user', 'membership.membershipRequest'])->latest()->limit(5)->get()->map(fn(Payment $p) => [
@@ -103,8 +102,7 @@ class DashboardController extends Controller
 
         $memberStatusDonut = [
             'active' => $totalMembers ? round($activeMembers / $totalMembers * 100) : 0,
-            'expired' => $totalMembers ? round($expiredMembers / $totalMembers * 100) : 0,
-            'inactive' => $totalMembers ? max(0, 100 - round($activeMembers / $totalMembers * 100) - round($expiredMembers / $totalMembers * 100)) : 0,
+            'inactive' => $totalMembers ? round($inactiveMembers / $totalMembers * 100) : 0,
         ];
 
         return response()->json([
@@ -118,8 +116,8 @@ class DashboardController extends Controller
                     ['label' => 'Today Attendance', 'value' => $todayTotal, 'icon' => 'Dumbbell'],
                 ],
                 'kpis' => [
-                    'members' => ['total' => $totalMembers, 'active' => $activeMembers, 'expired' => $expiredMembers, 'inactive' => $inactiveMembers],
-                    'memberships' => ['total' => $totalMemberships, 'active' => $activeMemberships, 'expired' => $expiredMemberships, 'by_plan' => $membershipsByPlan],
+                    'members' => ['total' => $totalMembers, 'active' => $activeMembers, 'inactive' => $inactiveMembers],
+                    'memberships' => ['total' => $totalMemberships, 'active' => $activeMemberships, 'inactive' => $inactiveMemberships, 'by_plan' => $membershipsByPlan],
                     'payments' => ['total' => $totalPayments, 'revenue' => round((float) $totalRevenue, 2), 'last_6_months' => $paymentsLast6Months],
                     'attendance' => ['today_total' => $todayTotal, 'today_present' => $todayPresent, 'today_completed' => $todayCompleted, 'last_7_days' => $attendanceLast7],
                 ],

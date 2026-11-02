@@ -21,7 +21,7 @@ class MemberFactory extends Factory
             'address' => fake()->optional()->address(),
             'birthdate' => fake()->optional()->dateTimeBetween('-60 years', '-18 years'),
             'gender' => fake()->randomElement(['male', 'female', 'other']),
-            'status' => fake()->randomElement(['active', 'inactive', 'expired']),
+            'status' => fake()->randomElement(['active', 'inactive']),
         ];
     }
 
@@ -30,8 +30,14 @@ class MemberFactory extends Factory
         return $this->state(fn () => ['status' => 'active']);
     }
 
+    public function inactive(): static
+    {
+        return $this->state(fn () => ['status' => 'inactive']);
+    }
+
+    // Backwards-compatible alias
     public function expired(): static
     {
-        return $this->state(fn () => ['status' => 'expired']);
+        return $this->inactive();
     }
 }

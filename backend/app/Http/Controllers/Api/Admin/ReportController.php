@@ -20,8 +20,8 @@ class ReportController extends Controller
             'type' => ['nullable', 'in:members,memberships,payments,attendance,general,consolidated'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-            'status' => ['nullable', 'string'],
-            'membership_status' => ['nullable', 'in:all,active,expired'],
+            'status' => ['nullable', 'in:all,active,inactive'],
+            'membership_status' => ['nullable', 'in:all,active,inactive'],
             'plan_type' => ['nullable', 'in:all,daily,monthly,yearly'],
             'month' => ['nullable', 'in:all,1,2,3,4,5,6,7,8,9,10,11,12'],
             'search' => ['nullable', 'string', 'max:255'],
@@ -61,8 +61,10 @@ class ReportController extends Controller
         $rows = $members->map(function (Member $m) use ($membershipsByUser, $asOf) {
             $membership = $membershipsByUser->get($m->user_id)?->last();
             $request = $membership?->membershipRequest;
-            $isExpired = $membership && ($membership->status === 'expired' || $membership->end_date->format('Y-m-d') < $asOf);
-            $membershipStatus = !$membership ? 'no_plan' : ($isExpired ? 'expired' : 'active');
+            $isInactive = !$membership
+                || $membership->status === 'inactive'
+                || $membership->end_date->format('Y-m-d') < $asOf;
+            $membershipStatus = $isInactive ? 'inactive' : 'active';
 
             return [
                 'id' => $m->id,
@@ -104,16 +106,14 @@ class ReportController extends Controller
 
         $filtered = match ($statusFilter) {
             'active' => $rows->where('status', 'active'),
-            'expired' => $rows->where('status', 'expired'),
-            'no_plan' => $rows->where('status', 'no_plan'),
+            'inactive' => $rows->where('status', 'inactive'),
             default => $rows,
         };
         $filtered = $filtered->values();
 
         $total = $filtered->count();
         $active = $filtered->where('status', 'active')->count();
-        $expired = $filtered->where('status', 'expired')->count();
-        $noPlan = $filtered->where('status', 'no_plan')->count();
+        $inactive = $filtered->where('status', 'inactive')->count();
 
         $perPage = max(1, (int) $request->get('per_page', 10));
         $page = max(1, (int) $request->get('page', 1));
@@ -129,8 +129,7 @@ class ReportController extends Controller
         return $this->paginatedResponse($paginator->items(), $paginator, [
             'total' => $total,
             'active' => $active,
-            'expired' => $expired,
-            'no_plan' => $noPlan,
+            'inactive' => $inactive,
         ]);
     }
 
@@ -150,9 +149,9 @@ class ReportController extends Controller
             });
         }
         if ($membershipStatus && $membershipStatus !== 'all') {
-            if ($membershipStatus === 'expired') {
+            if ($membershipStatus === 'inactive') {
                 $query->where(function ($q) use ($asOf) {
-                    $q->where('status', 'expired')->orWhereDate('end_date', '<', $asOf);
+                    $q->where('status', 'inactive')->orWhereDate('end_date', '<', $asOf);
                 });
             } else {
                 $query->where('status', 'active')->whereDate('end_date', '>=', $asOf);
@@ -165,12 +164,12 @@ class ReportController extends Controller
         $all = (clone $query)->get();
         $total = $all->count();
         $active = $all->filter(fn($m) => $m->status === 'active' && $m->end_date->format('Y-m-d') >= $asOf)->count();
-        $expired = $total - $active;
+        $inactive = $total - $active;
 
         $paginator = $query->latest('start_date')->paginate($request->get('per_page', 10))->appends($request->query());
 
         $data = $paginator->getCollection()->map(function (Membership $m) use ($asOf) {
-            $isExpired = $m->status === 'expired' || $m->end_date->format('Y-m-d') < $asOf;
+            $isInactive = $m->status === 'inactive' || $m->end_date->format('Y-m-d') < $asOf;
             return [
                 'id' => $m->id,
                 'user_id' => $m->user_id,
@@ -182,13 +181,13 @@ class ReportController extends Controller
                 'amount' => $m->membershipRequest?->amount,
                 'start_date' => $m->start_date->format('Y-m-d'),
                 'end_date' => $m->end_date->format('Y-m-d'),
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isInactive ? 'inactive' : 'active',
                 'raw_status' => $m->status,
                 'created_at' => $m->created_at->format('Y-m-d'),
             ];
         });
 
-        return $this->paginatedResponse($data, $paginator, ['total' => $total, 'active' => $active, 'expired' => $expired]);
+        return $this->paginatedResponse($data, $paginator, ['total' => $total, 'active' => $active, 'inactive' => $inactive]);
     }
 
     private function paymentsReport(Request $request, ?string $from, ?string $to): JsonResponse
@@ -286,9 +285,9 @@ class ReportController extends Controller
         $applyMembershipStatus = function ($query) use ($membershipStatus, $asOf) {
             if ($membershipStatus === 'active') {
                 $query->where('status', 'active')->whereDate('end_date', '>=', $asOf);
-            } elseif ($membershipStatus === 'expired') {
+            } elseif ($membershipStatus === 'inactive') {
                 $query->where(function ($q) use ($asOf) {
-                    $q->where('status', 'expired')->orWhereDate('end_date', '<', $asOf);
+                    $q->where('status', 'inactive')->orWhereDate('end_date', '<', $asOf);
                 });
             }
             return $query;
@@ -300,7 +299,6 @@ class ReportController extends Controller
         $membersSummary = [
             'total' => $membersAll->count(),
             'active' => $membersAll->where('status', 'active')->count(),
-            'expired' => $membersAll->where('status', 'expired')->count(),
             'inactive' => $membersAll->where('status', 'inactive')->count(),
         ];
 
@@ -353,12 +351,12 @@ class ReportController extends Controller
         if ($to) $membershipRowsQuery->whereDate('start_date', '<=', $to);
         $applyMembershipStatus($membershipRowsQuery);
         $recentMemberships = $membershipRowsQuery->get()->map(function (Membership $m) use ($asOf) {
-            $isExpired = $m->status === 'expired' || $m->end_date->format('Y-m-d') < $asOf;
+            $isInactive = $m->status === 'inactive' || $m->end_date->format('Y-m-d') < $asOf;
             return [
                 'user_name' => $m->user?->name,
                 'plan_label' => match ($m->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
                 'period' => $m->start_date->format('Y-m-d') . ' → ' . $m->end_date->format('Y-m-d'),
-                'status' => $isExpired ? 'expired' : 'active',
+                'status' => $isInactive ? 'inactive' : 'active',
             ];
         });
 
@@ -396,9 +394,10 @@ class ReportController extends Controller
             'summary' => [
                 'members_total' => $membersSummary['total'],
                 'members_active' => $membersSummary['active'],
+                'members_inactive' => $membersSummary['inactive'],
                 'memberships_total' => $membershipsAll->count(),
                 'memberships_active' => $membershipsActive,
-                'memberships_expired' => $membershipsAll->count() - $membershipsActive,
+                'memberships_inactive' => $membershipsAll->count() - $membershipsActive,
                 'payments_total' => $paymentsAll->count(),
                 'payments_revenue' => round($paymentsRevenue, 2),
                 'attendances_total' => $attendancesAll->count(),

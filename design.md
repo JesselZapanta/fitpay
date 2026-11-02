@@ -50,8 +50,8 @@ Light-first UI (front-desk visibility, fluorescent lighting, quick glances) with
 |---|---|---|
 | Active / Paid / Present | `#1E8E5A` on `#DFF5E9` | Membership active, payment completed |
 | Expiring / Pending | `#B8790A` on `#FCEFD6` | Membership expiring ≤7 days, payment pending |
-| Expired / Overdue / Absent | `#C43D3D` on `#FBE2E2` | Membership expired, payment overdue |
-| Neutral / Draft | `#5B6168` on `#EDEEF0` | Inactive plan, draft state |
+| Rejected / Overdue / Absent | `#C43D3D` on `#FBE2E2` | Rejected request, payment overdue |
+| Neutral / Inactive | `#5B6168` on `#EDEEF0` | Inactive member or membership, draft state |
 
 **Why not "gym red/black" or pure orange**: pure red-and-black reads as *alarm* and *masculine gym-bro*, which fights against clear data-reading; pure ember orange (`#FF5A1F`) tested as cheap/discount-store, high-saturation on warm `surface-0` causes eye fatigue and fails the calm-under-pressure front-desk test. **Deep teal `#0F766E`** keeps the energy (charge) without the aggression, stays legible on white/warm-gray, meets WCAG AA for white text, and sits next to `grow` green as an analogous, premium pair — both "money in" and "membership healthy" without the discount vibe.
 
@@ -108,7 +108,7 @@ Numeric data (pesos, dates, counts) always uses `Space Grotesk` with `font-varia
 - Minimum tap target: **44×44px** everywhere, no exceptions — this is a touch-first UI.
 
 ### Status badge / pill
-Pill shape, 4px vertical / 10px horizontal padding, 12px semibold text, colored per the status table in §2. Always paired with a small dot or icon (not color alone) — e.g. ● Active, ▲ Expiring, ✕ Expired — for colorblind accessibility.
+Pill shape, 4px vertical / 10px horizontal padding, 12px semibold text, colored per the status table in §2. Always paired with a small dot or icon (not color alone) — e.g. ● Active, ▲ Expiring, ✕ Inactive — for colorblind accessibility.
 
 ### Cards
 - **Stat card** (dashboard): icon top-left, big number (Space Grotesk 32–40px), label below, optional small trend indicator (▲12% this month in `--grow-500`).
@@ -137,7 +137,7 @@ Centered card (max 400px) on `--surface-0` background, subtle radial gradient in
 ### 6.2 Dashboard (FR-07)
 Mobile: vertical stack of stat cards, swipeable. Desktop: 4-column stat grid at top —
 `Total Members` · `Payments Today (₱)` · `Checked In Today` · `Expiring This Week`
-— followed by two panels side-by-side (stack on mobile): a **recent activity feed** (last payments/check-ins, timestamped) and a **membership status breakdown** (simple donut: Active / Expiring / Expired using the status palette). This is the only screen that uses a chart — kept to one, so it stays the "big picture" view rather than competing with Reports.
+— followed by two panels side-by-side (stack on mobile): a **recent activity feed** (last payments/check-ins, timestamped) and a **membership status breakdown** (simple donut: Active / Inactive using the status palette). This is the only screen that uses a chart — kept to one, so it stays the "big picture" view rather than competing with Reports.
 
 ### 6.3 Member Management (FR-02)
 List view (cards on mobile, table on desktop) with a persistent search bar and a floating "+ Add Member" primary button (bottom-right FAB on mobile, top-right button on desktop). Tapping a member opens a **detail sheet/drawer** (not a new page) showing profile, membership status pill, payment history snippet, and Edit/Delete actions — keeps the admin from losing their place in the list.
