@@ -17,10 +17,11 @@ class ReportController extends Controller
     public function index(Request $request): JsonResponse
     {
         $request->validate([
-            'type' => ['nullable', 'in:members,memberships,payments,attendance,general'],
+            'type' => ['nullable', 'in:members,memberships,payments,attendance,general,consolidated'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'status' => ['nullable', 'string'],
+            'membership_status' => ['nullable', 'in:all,active,expired'],
             'plan_type' => ['nullable', 'in:all,daily,monthly,yearly'],
             'month' => ['nullable', 'in:all,1,2,3,4,5,6,7,8,9,10,11,12'],
             'search' => ['nullable', 'string', 'max:255'],
@@ -30,7 +31,7 @@ class ReportController extends Controller
         $from = $request->input('from');
         $to = $request->input('to');
 
-        if ($type === 'general' || !$request->filled('type')) {
+        if ($type === 'general' || $type === 'consolidated' || !$request->filled('type')) {
             return $this->generalReport($request, $from, $to);
         }
 
@@ -45,62 +46,101 @@ class ReportController extends Controller
     private function membersReport(Request $request, ?string $from, ?string $to): JsonResponse
     {
         $query = Member::with('user');
-
-        if ($from) $query->whereDate('created_at', '>=', $from);
-        if ($to) $query->whereDate('created_at', '<=', $to);
         if ($request->filled('search')) $query->search($request->input('search'));
-        if ($request->filled('status') && $request->status !== 'all') $query->where('status', $request->status);
-        if ($request->filled('plan_type') && $request->plan_type !== 'all') {
-            $plan = $request->plan_type;
-            $query->whereHas('user.memberships.membershipRequest', function ($q) use ($plan) {
-                $q->where('plan_type', $plan);
-            });
-        }
 
-        $all = (clone $query)->get();
-        $total = $all->count();
-        $active = $all->where('status', 'active')->count();
-        $expired = $all->where('status', 'expired')->count();
-        $inactive = $all->where('status', 'inactive')->count();
+        $members = $query->latest()->get();
 
-        $paginator = $query->latest()->paginate($request->get('per_page', 10))->appends($request->query());
+        $membershipsByUser = Membership::with('membershipRequest')
+            ->orderBy('end_date')
+            ->get()
+            ->groupBy('user_id');
 
-        $data = $paginator->getCollection()->map(function (Member $m) {
-            $latestMembership = \App\Models\Membership::where('user_id', $m->user_id)->latest('end_date')->first();
-            $plan = $latestMembership?->membershipRequest?->plan_type;
-            if (!$plan) {
-                $latestRequest = \App\Models\MembershipRequest::where('user_id', $m->user_id)->latest()->first();
-                $plan = $latestRequest?->plan_type;
-            }
+        $asOf = Carbon::today('Asia/Manila')->toDateString();
+        $statusFilter = $request->input('status', $request->input('membership_status', 'all'));
+
+        $rows = $members->map(function (Member $m) use ($membershipsByUser, $asOf) {
+            $membership = $membershipsByUser->get($m->user_id)?->last();
+            $request = $membership?->membershipRequest;
+            $isExpired = $membership && ($membership->status === 'expired' || $membership->end_date->format('Y-m-d') < $asOf);
+            $membershipStatus = !$membership ? 'no_plan' : ($isExpired ? 'expired' : 'active');
+
             return [
                 'id' => $m->id,
                 'member_code' => $m->member_code,
                 'name' => $m->name,
                 'email' => $m->email,
                 'phone' => $m->phone,
-                'status' => $m->status,
                 'gender' => $m->gender,
                 'birthdate' => $m->birthdate?->format('Y-m-d'),
+                'member_status' => $m->status,
                 'created_at' => $m->created_at?->format('Y-m-d'),
-                'latest_plan' => $plan,
-                'latest_plan_label' => match ($plan) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => $plan ?? 'No plan' },
-                'has_active_membership' => $latestMembership && $latestMembership->status === 'active' && Carbon::parse($latestMembership->end_date)->gte(today()),
+                'membership_id' => $membership?->id,
+                'start_date' => $membership?->start_date?->format('Y-m-d'),
+                'end_date' => $membership?->end_date?->format('Y-m-d'),
+                'plan_type' => $request?->plan_type,
+                'plan_label' => match ($request?->plan_type) {
+                    'daily' => 'Daily Pass',
+                    'monthly' => 'Monthly Plan',
+                    'yearly' => 'Yearly Plan',
+                    default => 'No plan',
+                },
+                'amount' => $request?->amount,
+                'reference_number' => $request?->reference_number,
+                'status' => $membershipStatus,
+                'has_active_membership' => $membershipStatus === 'active',
             ];
         });
 
-        return $this->paginatedResponse($data, $paginator, [
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $rows = $rows->filter(function ($row) use ($from, $to) {
+            if (!$from && !$to) return true;
+            if (empty($row['start_date']) || empty($row['end_date'])) return false;
+            if ($from && $row['end_date'] < $from) return false;
+            if ($to && $row['start_date'] > $to) return false;
+            return true;
+        })->values();
+
+        $filtered = match ($statusFilter) {
+            'active' => $rows->where('status', 'active'),
+            'expired' => $rows->where('status', 'expired'),
+            'no_plan' => $rows->where('status', 'no_plan'),
+            default => $rows,
+        };
+        $filtered = $filtered->values();
+
+        $total = $filtered->count();
+        $active = $filtered->where('status', 'active')->count();
+        $expired = $filtered->where('status', 'expired')->count();
+        $noPlan = $filtered->where('status', 'no_plan')->count();
+
+        $perPage = max(1, (int) $request->get('per_page', 10));
+        $page = max(1, (int) $request->get('page', 1));
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $filtered->forPage($page, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return $this->paginatedResponse($paginator->items(), $paginator, [
             'total' => $total,
             'active' => $active,
             'expired' => $expired,
-            'inactive' => $inactive,
+            'no_plan' => $noPlan,
         ]);
     }
 
     private function membershipsReport(Request $request, ?string $from, ?string $to): JsonResponse
     {
         $query = Membership::with(['user', 'membershipRequest']);
+        $asOf = $to ? Carbon::parse($to)->toDateString() : Carbon::today('Asia/Manila')->toDateString();
+        $membershipStatus = $request->input('membership_status', $request->input('status', 'all'));
 
-        if ($from) $query->whereDate('start_date', '>=', $from);
+        if ($from) $query->whereDate('end_date', '>=', $from);
         if ($to) $query->whereDate('start_date', '<=', $to);
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -109,11 +149,13 @@ class ReportController extends Controller
                   ->orWhereHas('membershipRequest', fn($r) => $r->where('reference_number', 'like', "%{$search}%"));
             });
         }
-        if ($request->filled('status') && $request->status !== 'all') {
-            if ($request->status === 'expired') {
-                $query->where(function ($q) { $q->where('status', 'expired')->orWhere('end_date', '<', today()); });
+        if ($membershipStatus && $membershipStatus !== 'all') {
+            if ($membershipStatus === 'expired') {
+                $query->where(function ($q) use ($asOf) {
+                    $q->where('status', 'expired')->orWhereDate('end_date', '<', $asOf);
+                });
             } else {
-                $query->where('status', $request->status)->where('end_date', '>=', today());
+                $query->where('status', 'active')->whereDate('end_date', '>=', $asOf);
             }
         }
         if ($request->filled('plan_type') && $request->plan_type !== 'all') {
@@ -122,13 +164,13 @@ class ReportController extends Controller
 
         $all = (clone $query)->get();
         $total = $all->count();
-        $active = $all->filter(fn($m) => !$m->end_date->isPast() && $m->status === 'active')->count();
+        $active = $all->filter(fn($m) => $m->status === 'active' && $m->end_date->format('Y-m-d') >= $asOf)->count();
         $expired = $total - $active;
 
         $paginator = $query->latest('start_date')->paginate($request->get('per_page', 10))->appends($request->query());
 
-        $data = $paginator->getCollection()->map(function (Membership $m) {
-            $isExpired = $m->end_date->isPast() || $m->status === 'expired';
+        $data = $paginator->getCollection()->map(function (Membership $m) use ($asOf) {
+            $isExpired = $m->status === 'expired' || $m->end_date->format('Y-m-d') < $asOf;
             return [
                 'id' => $m->id,
                 'user_id' => $m->user_id,
@@ -233,8 +275,26 @@ class ReportController extends Controller
 
     private function generalReport(Request $request, ?string $from, ?string $to): JsonResponse
     {
+        // Basis of the range (see also frontend hint):
+        // - Members: roster as of the range end (created_at <= to)
+        // - Memberships: spans overlapping the range (start_date <= to AND end_date >= from)
+        // - Payments: created_at within the range
+        // - Attendance: attendance_date within the range
+        $asOf = $to ? Carbon::parse($to)->toDateString() : Carbon::today('Asia/Manila')->toDateString();
+        $membershipStatus = $request->input('membership_status', 'all');
+
+        $applyMembershipStatus = function ($query) use ($membershipStatus, $asOf) {
+            if ($membershipStatus === 'active') {
+                $query->where('status', 'active')->whereDate('end_date', '>=', $asOf);
+            } elseif ($membershipStatus === 'expired') {
+                $query->where(function ($q) use ($asOf) {
+                    $q->where('status', 'expired')->orWhereDate('end_date', '<', $asOf);
+                });
+            }
+            return $query;
+        };
+
         $memberQuery = Member::query();
-        if ($from) $memberQuery->whereDate('created_at', '>=', $from);
         if ($to) $memberQuery->whereDate('created_at', '<=', $to);
         $membersAll = $memberQuery->get();
         $membersSummary = [
@@ -245,10 +305,13 @@ class ReportController extends Controller
         ];
 
         $membershipQuery = Membership::with(['user', 'membershipRequest']);
-        if ($from) $membershipQuery->whereDate('start_date', '>=', $from);
+        if ($from) $membershipQuery->whereDate('end_date', '>=', $from);
         if ($to) $membershipQuery->whereDate('start_date', '<=', $to);
+        $applyMembershipStatus($membershipQuery);
         $membershipsAll = $membershipQuery->get();
-        $membershipsActive = $membershipsAll->filter(fn($m) => !$m->end_date->isPast() && $m->status === 'active')->count();
+        $membershipsActive = $membershipsAll
+            ->filter(fn($m) => $m->status === 'active' && $m->end_date->format('Y-m-d') >= $asOf)
+            ->count();
 
         $paymentQuery = Payment::query();
         if ($from) $paymentQuery->whereDate('created_at', '>=', $from);
@@ -261,14 +324,36 @@ class ReportController extends Controller
         if ($to) $attendanceQuery->whereDate('attendance_date', '<=', $to);
         $attendancesAll = $attendanceQuery->get();
 
-        $recentMembers = Member::with('user')->latest()->limit(5)->get()->map(fn(Member $m) => [
-            'member_code' => $m->member_code,
-            'name' => $m->name,
-            'status' => $m->status,
-            'created_at' => $m->created_at->format('Y-m-d'),
-        ]);
-        $recentMemberships = Membership::with(['user', 'membershipRequest'])->latest('start_date')->limit(5)->get()->map(function (Membership $m) {
-            $isExpired = $m->end_date->isPast() || $m->status === 'expired';
+        $membershipByUser = Membership::with('membershipRequest')->orderBy('end_date')->get()->groupBy('user_id');
+
+        $memberRowsQuery = Member::with('user')->latest();
+        if ($to) $memberRowsQuery->whereDate('created_at', '<=', $to);
+        $recentMembers = $memberRowsQuery->get()->map(function (Member $m) use ($membershipByUser) {
+            $membership = $membershipByUser->get($m->user_id)?->last();
+            $planType = $membership?->membershipRequest?->plan_type;
+
+            return [
+                'member_code' => $m->member_code,
+                'name' => $m->name,
+                'email' => $m->email,
+                'membership_start' => $membership?->start_date?->format('Y-m-d'),
+                'membership_end' => $membership?->end_date?->format('Y-m-d'),
+                'plan_type' => $planType,
+                'plan_label' => match ($planType) {
+                    'daily' => 'Daily Pass',
+                    'monthly' => 'Monthly Plan',
+                    'yearly' => 'Yearly Plan',
+                    default => 'No plan',
+                },
+            ];
+        });
+
+        $membershipRowsQuery = Membership::with(['user', 'membershipRequest'])->latest('start_date');
+        if ($from) $membershipRowsQuery->whereDate('end_date', '>=', $from);
+        if ($to) $membershipRowsQuery->whereDate('start_date', '<=', $to);
+        $applyMembershipStatus($membershipRowsQuery);
+        $recentMemberships = $membershipRowsQuery->get()->map(function (Membership $m) use ($asOf) {
+            $isExpired = $m->status === 'expired' || $m->end_date->format('Y-m-d') < $asOf;
             return [
                 'user_name' => $m->user?->name,
                 'plan_label' => match ($m->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
@@ -276,13 +361,21 @@ class ReportController extends Controller
                 'status' => $isExpired ? 'expired' : 'active',
             ];
         });
-        $recentPayments = Payment::with(['user', 'membership.membershipRequest'])->latest()->limit(5)->get()->map(fn(Payment $p) => [
+
+        $paymentRowsQuery = Payment::with(['user', 'membership.membershipRequest'])->latest();
+        if ($from) $paymentRowsQuery->whereDate('created_at', '>=', $from);
+        if ($to) $paymentRowsQuery->whereDate('created_at', '<=', $to);
+        $recentPayments = $paymentRowsQuery->get()->map(fn(Payment $p) => [
             'user_name' => $p->user?->name,
             'plan_label' => match ($p->membership?->membershipRequest?->plan_type) { 'daily' => 'Daily Pass', 'monthly' => 'Monthly Plan', 'yearly' => 'Yearly Plan', default => 'No plan' },
             'amount' => $p->amount,
             'created_at' => $p->created_at->format('Y-m-d'),
         ]);
-        $recentAttendances = Attendance::with(['member.user'])->latest('attendance_date')->latest('check_in')->limit(5)->get()->map(function (Attendance $a) {
+
+        $attendanceRowsQuery = Attendance::with(['member.user'])->latest('attendance_date')->latest('check_in');
+        if ($from) $attendanceRowsQuery->whereDate('attendance_date', '>=', $from);
+        if ($to) $attendanceRowsQuery->whereDate('attendance_date', '<=', $to);
+        $recentAttendances = $attendanceRowsQuery->get()->map(function (Attendance $a) {
             return [
                 'member_name' => $a->member?->name ?? $a->user?->name,
                 'member_code' => $a->member?->member_code,
